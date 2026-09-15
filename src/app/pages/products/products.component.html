@@ -1,0 +1,28 @@
+<section class="page-header">
+  <div class="container">
+    <h1>Products</h1>
+    <p>Real software we've built and run in production for Minnesota businesses.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="products-grid">
+      @for (product of products; track product.name) {
+        <article class="product-card">
+          <h2>{{ product.name }}</h2>
+          <p class="tagline">{{ product.tagline }}</p>
+          <p class="description">{{ product.description }}</p>
+          <ul class="feature-list">
+            @for (feature of product.features; track feature) {
+              <li>{{ feature }}</li>
+            }
+          </ul>
+          <a [href]="product.url" target="_blank" rel="noopener" class="btn btn-primary">
+            Visit {{ product.name }}
+          </a>
+        </article>
+      }
+    </div>
+  </div>
+</section>
