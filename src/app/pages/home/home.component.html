@@ -1,0 +1,48 @@
+<section class="hero">
+  <div class="container hero-inner">
+    <h1>Custom <span class="accent">software</span> that runs your business.</h1>
+    <p class="pitch">
+      We design and build the tools Minnesota businesses actually need — from
+      livestock management to inventory tracking — and we can build yours next.
+    </p>
+    <div class="cta-row">
+      <a routerLink="/contact" class="btn btn-primary">Start a Project</a>
+      <a routerLink="/products" class="btn btn-secondary">See Our Work</a>
+    </div>
+    <div class="chip-row">
+      <span class="chip">InfiniHerd — Livestock Management</span>
+      <span class="chip">InfiniTrack — Inventory Management</span>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2>What we do</h2>
+    <div class="services-grid">
+      @for (service of services; track service.title) {
+        <div class="service-card">
+          <h3>{{ service.title }}</h3>
+          <p>{{ service.description }}</p>
+        </div>
+      }
+    </div>
+    <a routerLink="/services" class="link-more">See all services &rarr;</a>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <h2>Products we've built</h2>
+    <p class="section-lead">Real software, running in production for real Minnesota operations.</p>
+    <a routerLink="/products" class="link-more">Explore our products &rarr;</a>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container">
+    <h2>Have a project in mind?</h2>
+    <p>Tell us what you're trying to solve — we'll tell you how we'd build it.</p>
+    <a routerLink="/contact" class="btn btn-primary">Get in Touch</a>
+  </div>
+</section>
