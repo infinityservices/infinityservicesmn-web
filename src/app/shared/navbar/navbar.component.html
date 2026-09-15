@@ -1,0 +1,26 @@
+<header class="navbar">
+  <div class="container navbar-inner">
+    <a routerLink="/" class="brand" (click)="closeMobileMenu()">
+      <span class="brand-dot">●</span> INFINITY SERVICES
+    </a>
+
+    <nav class="nav-links" [class.open]="mobileMenuOpen()">
+      <a routerLink="/services" routerLinkActive="active" (click)="closeMobileMenu()">Services</a>
+      <a routerLink="/products" routerLinkActive="active" (click)="closeMobileMenu()">Products</a>
+      <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">About</a>
+      <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileMenu()" class="btn btn-primary nav-cta">Contact</a>
+    </nav>
+
+    <button
+      type="button"
+      class="menu-toggle"
+      (click)="toggleMobileMenu()"
+      [attr.aria-expanded]="mobileMenuOpen()"
+      aria-label="Toggle navigation menu"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</header>

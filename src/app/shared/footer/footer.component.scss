@@ -1,0 +1,50 @@
+.footer {
+  background: var(--color-navy);
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 80px;
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 48px 24px 32px;
+}
+
+.footer-brand {
+  font-weight: 700;
+  font-size: 14px;
+
+  .brand-dot {
+    color: var(--color-accent);
+  }
+
+  p {
+    margin-top: 8px;
+    font-weight: 400;
+    font-size: 13px;
+    opacity: 0.7;
+  }
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+
+  a {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 14px;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+.footer-legal {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px 24px;
+  font-size: 12px;
+  opacity: 0.6;
+}
