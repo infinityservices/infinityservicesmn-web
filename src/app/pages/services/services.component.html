@@ -1,0 +1,24 @@
+<section class="page-header">
+  <div class="container">
+    <h1>Services</h1>
+    <p>Custom software built around your business, not the other way around.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="offerings-grid">
+      @for (offering of offerings; track offering.title) {
+        <div class="offering-card">
+          <h3>{{ offering.title }}</h3>
+          <p>{{ offering.description }}</p>
+        </div>
+      }
+    </div>
+
+    <div class="cta-block">
+      <p>Not sure which of these fits what you need? Let's talk it through.</p>
+      <a routerLink="/contact" class="btn btn-primary">Start a Conversation</a>
+    </div>
+  </div>
+</section>
