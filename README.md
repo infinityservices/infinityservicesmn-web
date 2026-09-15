@@ -19,14 +19,16 @@ npm run test:api   # Vitest specs for the /api/contact function
 
 ## Contact form configuration
 
-`/api/contact` sends email via Resend (see
-`docs/superpowers/specs/2026-09-14-marketing-site-design.md` and
-`docs/superpowers/plans/2026-09-14-marketing-site.md` Task 9 for how this
-was provisioned). Required environment variables, set in the Vercel project:
+`/api/contact` sends email via [Resend](https://resend.com). **Before this goes live, complete this checklist:**
 
-- `RESEND_API_KEY`
-- `CONTACT_TO_EMAIL` — inbox that receives submissions
-- `CONTACT_FROM_EMAIL` — verified sending address
+1. Create a Resend account and verify a sending domain.
+2. In the Vercel project, set these environment variables:
+   - `RESEND_API_KEY`
+   - `CONTACT_TO_EMAIL` — inbox that receives submissions
+   - `CONTACT_FROM_EMAIL` — verified sending address
+3. Submit a live test through the deployed `/contact` page and confirm the email arrives.
+
+Until all three environment variables are set, `/api/contact` returns a 500 and the contact form will not work.
 
 ## Deployment
 

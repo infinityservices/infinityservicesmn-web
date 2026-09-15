@@ -4,18 +4,34 @@ export interface ContactPayload {
   message: string;
 }
 
+export interface RawContactBody {
+  name?: unknown;
+  email?: unknown;
+  message?: unknown;
+  website?: unknown;
+}
+
 export type ValidationResult =
   | { valid: true; data: ContactPayload }
   | { valid: false; error: string };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export function isHoneypotTriggered(body: unknown): boolean {
+  if (typeof body !== 'object' || body === null) {
+    return false;
+  }
+
+  const { website } = body as RawContactBody;
+  return typeof website === 'string' && website.trim().length > 0;
+}
+
 export function validateContactPayload(body: unknown): ValidationResult {
   if (typeof body !== 'object' || body === null) {
     return { valid: false, error: 'Request body must be a JSON object.' };
   }
 
-  const { name, email, message } = body as Record<string, unknown>;
+  const { name, email, message } = body as RawContactBody;
 
   if (typeof name !== 'string' || name.trim().length === 0) {
     return { valid: false, error: 'Name is required.' };
@@ -40,6 +56,10 @@ export function validateContactPayload(body: unknown): ValidationResult {
 
   return {
     valid: true,
-    data: { name: name.trim(), email: email.trim(), message: message.trim() },
+    data: {
+      name: name.trim().replace(/[\x00-\x1F\x7F]/g, ''),
+      email: email.trim(),
+      message: message.trim(),
+    },
   };
 }

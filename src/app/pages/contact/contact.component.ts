@@ -20,6 +20,7 @@ export class ContactComponent {
     name: ['', [Validators.required, Validators.maxLength(120)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(200)]],
     message: ['', [Validators.required, Validators.maxLength(4000)]],
+    website: [''],
   });
 
   async submit(): Promise<void> {
@@ -47,7 +48,11 @@ export class ContactComponent {
       this.form.reset();
     } catch (err) {
       this.state.set('error');
-      this.errorMessage.set(err instanceof Error ? err.message : 'Something went wrong.');
+      if (err instanceof TypeError) {
+        this.errorMessage.set('Network error — please check your connection and try again.');
+      } else {
+        this.errorMessage.set(err instanceof Error ? err.message : 'Something went wrong.');
+      }
     }
   }
 }

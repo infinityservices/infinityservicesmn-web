@@ -37,6 +37,7 @@ describe('ContactComponent', () => {
       name: 'Jane Doe',
       email: 'jane@example.com',
       message: 'Hello there.',
+      website: '',
     });
 
     await fixture.componentInstance.submit();
@@ -57,6 +58,7 @@ describe('ContactComponent', () => {
       name: 'Jane Doe',
       email: 'jane@example.com',
       message: 'Hello there.',
+      website: '',
     });
 
     await fixture.componentInstance.submit();

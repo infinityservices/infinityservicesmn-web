@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateContactPayload } from './validate-contact';
+import { isHoneypotTriggered, validateContactPayload } from './validate-contact';
 
 describe('validateContactPayload', () => {
   it('accepts a well-formed payload', () => {
@@ -54,5 +54,37 @@ describe('validateContactPayload', () => {
     if (result.valid) {
       expect(result.data.name).toBe('Jane Doe');
     }
+  });
+
+  it('strips control characters (including CR/LF) from the validated name', () => {
+    const result = validateContactPayload({
+      name: 'Jane\r\nBcc: attacker@example.com',
+      email: 'jane@example.com',
+      message: 'Hi',
+    });
+
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.data.name).toBe('JaneBcc: attacker@example.com');
+      expect(result.data.name).not.toMatch(/[\r\n]/);
+    }
+  });
+});
+
+describe('isHoneypotTriggered', () => {
+  it('returns true when website is a non-empty string', () => {
+    expect(isHoneypotTriggered({ website: 'http://spam.example' })).toBe(true);
+  });
+
+  it('returns false when website is absent', () => {
+    expect(isHoneypotTriggered({ name: 'Jane Doe' })).toBe(false);
+  });
+
+  it('returns false when website is an empty string', () => {
+    expect(isHoneypotTriggered({ website: '' })).toBe(false);
+  });
+
+  it('returns false for a non-object body', () => {
+    expect(isHoneypotTriggered('not an object')).toBe(false);
   });
 });
