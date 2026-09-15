@@ -1,0 +1,25 @@
+.page-header {
+  background: var(--color-slate-50);
+  padding: 64px 0 48px;
+
+  p {
+    color: var(--color-text-secondary);
+    font-size: 17px;
+    margin-top: 8px;
+  }
+}
+
+.section {
+  padding: 64px 0;
+}
+
+.narrow {
+  max-width: 680px;
+
+  p {
+    font-size: 16px;
+    line-height: 1.75;
+    color: var(--color-text-secondary);
+    margin-bottom: 24px;
+  }
+}
