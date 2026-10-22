@@ -5,9 +5,6 @@ interface Product {
   tagline: string;
   description: string;
   features: string[];
-  // TODO: confirm each app's production URL once its custom domain is
-  // live (spec: "Open items to confirm during implementation"). These
-  // placeholders point at the apps' default Vercel deployment URLs.
   url: string;
 }
 
@@ -30,7 +27,7 @@ export class ProductsComponent {
         'Bulk vaccination workflows',
         'MN feedlot Animal Unit compliance reporting',
       ],
-      url: 'https://infiniherd.vercel.app',
+      url: 'https://www.infiniherd.app',
     },
     {
       name: 'InfiniTrack',
@@ -43,7 +40,7 @@ export class ProductsComponent {
         'Barcode generation and scanning',
         'Automated reporting exports',
       ],
-      url: 'https://infinitrack.vercel.app',
+      url: 'https://infinitrack.app',
     },
   ];
 }

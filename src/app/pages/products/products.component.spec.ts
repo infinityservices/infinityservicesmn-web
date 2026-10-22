@@ -27,4 +27,11 @@ describe('ProductsComponent', () => {
     const links = (fixture.nativeElement as HTMLElement).querySelectorAll('a[target="_blank"]');
     expect(links.length).toBe(2);
   });
+
+  it('links each product to its production domain', () => {
+    const hrefs = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLAnchorElement>('a[target="_blank"]'),
+    ).map((a) => a.getAttribute('href'));
+    expect(hrefs).toEqual(['https://www.infiniherd.app', 'https://infinitrack.app']);
+  });
 });
