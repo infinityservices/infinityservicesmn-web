@@ -27,7 +27,7 @@ export class ProductsComponent {
         'Bulk vaccination workflows',
         'MN feedlot Animal Unit compliance reporting',
       ],
-      url: 'https://www.infiniherd.app',
+      url: 'https://infiniherd.app',
     },
     {
       name: 'InfiniTrack',

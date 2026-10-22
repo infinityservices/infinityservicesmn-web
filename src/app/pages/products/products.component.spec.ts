@@ -32,6 +32,6 @@ describe('ProductsComponent', () => {
     const hrefs = Array.from(
       (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLAnchorElement>('a[target="_blank"]'),
     ).map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual(['https://www.infiniherd.app', 'https://infinitrack.app']);
+    expect(hrefs).toEqual(['https://infiniherd.app', 'https://infinitrack.app']);
   });
 });
