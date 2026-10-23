@@ -19,6 +19,12 @@ describe('NavbarComponent', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
+  it('shows the logo mark and brand name', () => {
+    const brand = (fixture.nativeElement as HTMLElement).querySelector('.brand')!;
+    expect(brand.querySelector('img')?.getAttribute('src')).toBe('logo-mark.svg');
+    expect(brand.textContent?.replace(/\s+/g, ' ').trim()).toBe('Infinity Services');
+  });
+
   it('toggles the mobile menu open state', () => {
     const component = fixture.componentInstance;
     expect(component.mobileMenuOpen()).toBe(false);

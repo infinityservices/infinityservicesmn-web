@@ -13,11 +13,13 @@
 }
 
 .footer-brand {
-  font-weight: 700;
-  font-size: 14px;
+  font-size: 16px;
 
-  .brand-dot {
-    color: var(--color-accent);
+  .footer-brand-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
   }
 
   p {

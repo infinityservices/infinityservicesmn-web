@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50" role="img" aria-label="Infinity Services">
+  <g fill="none" stroke-linejoin="round">
+    <path d="M50 25 C43 14 37 6 27 6 C16 6 8 14 8 25 C8 36 16 44 27 44 C37 44 43 36 50 25" stroke="#05306C" stroke-width="12"/>
+    <path d="M50 25 C57 14 63 6 73 6 C84 6 92 14 92 25 C92 36 84 44 73 44 C63 44 57 36 50 25" stroke="#05306C" stroke-width="12"/>
+    <path d="M50 25 C43 14 37 6 27 6 C16 6 8 14 8 25 C8 36 16 44 27 44 C37 44 43 36 50 25" stroke="#5b86c9" stroke-width="7"/>
+    <path d="M50 25 C57 14 63 6 73 6 C84 6 92 14 92 25 C92 36 84 44 73 44 C63 44 57 36 50 25" stroke="#e5b52a" stroke-width="7"/>
+    <path d="M42.80 35.23 C45.22 32.33 47.55 28.85 50 25 C52.45 21.15 54.78 17.67 57.20 14.77" stroke="#05306C" stroke-width="12"/>
+    <path d="M42.80 35.23 C45.22 32.33 47.55 28.85 50 25" stroke="#5b86c9" stroke-width="7"/>
+    <path d="M50 25 C52.45 21.15 54.78 17.67 57.20 14.77" stroke="#e5b52a" stroke-width="7"/>
+  </g>
+</svg>
