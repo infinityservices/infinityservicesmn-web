@@ -26,5 +26,10 @@ export const routes: Routes = [
     title: 'Contact | Infinity Services',
     loadComponent: () => import('./pages/contact/contact.component').then((m) => m.ContactComponent),
   },
+  {
+    path: 'legal',
+    title: 'Legal | Infinity Services',
+    loadComponent: () => import('./pages/legal/legal.component').then((m) => m.LegalComponent),
+  },
   { path: '**', redirectTo: '' },
 ];
