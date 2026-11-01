@@ -16,8 +16,10 @@
   font-weight: 700;
   font-size: 14px;
 
-  .brand-dot {
-    color: var(--color-accent);
+  img {
+    display: block;
+    height: 72px;
+    width: auto;
   }
 
   p {

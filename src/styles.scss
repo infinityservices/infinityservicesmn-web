@@ -1,12 +1,12 @@
 :root {
   color-scheme: light;
 
-  --color-navy: #16232f;
-  --color-primary: #1565c0;
-  --color-primary-dark: #05306C;
-  --color-primary-light: #dbeafe;
-  --color-accent: #d4a30a;
-  --color-accent-dark: #b8860b;
+  --color-navy: #0c1926;
+  --color-primary: #0b7480;
+  --color-primary-dark: #075560;
+  --color-primary-light: #dcf1ef;
+  --color-accent: #5e9a0c;
+  --color-accent-dark: #3f7406;
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
@@ -102,7 +102,7 @@ h1, h2, h3, h4 {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent-dark) 100%);
   color: #fff;
 }
 
