@@ -22,11 +22,14 @@
   --color-slate-800: #1e293b;
   --color-slate-900: #0f172a;
 
-  --color-surface: #ffffff;
+  /* Warm off-white palette: softer on the eyes than pure white. */
+  --color-surface: #f5f3ee;        /* page background, navbar */
+  --color-surface-alt: #ece9e2;    /* page headers and alternating sections */
+  --color-surface-raised: #fbfaf7; /* cards, inputs, secondary buttons */
   --color-text: var(--color-slate-900);
   --color-text-secondary: var(--color-slate-600);
   --color-text-muted: var(--color-slate-400);
-  --color-border: var(--color-slate-200);
+  --color-border: #dedad1;
 
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -107,7 +110,7 @@ h1, h2, h3, h4 {
 }
 
 .btn-secondary {
-  background: var(--color-surface);
+  background: var(--color-surface-raised);
   color: var(--color-slate-900);
   border: 1px solid var(--color-slate-300);
 }
