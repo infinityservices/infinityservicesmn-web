@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import type { PostgrestError } from '@supabase/supabase-js';
 import { supabase } from './supabase';
-import type { Activity, Client, Invoice, Lead, LeadStatus, Project, Subscription, TimeEntry } from './models';
+import type { Activity, Client, Invoice, InvoiceDraft, Lead, LeadStatus, Project, Subscription, TimeEntry } from './models';
 
 function unwrap<T>(result: { data: T | null; error: PostgrestError | null }): T {
   if (result.error) {
@@ -103,6 +103,31 @@ export class AdminDataService {
     let query = this.db.from('invoices').select('*, clients(name)');
     if (clientId) query = query.eq('client_id', clientId);
     return unwrap(await query.order('due_date', { ascending: false, nullsFirst: false }));
+  }
+
+  /** Creates a draft Square invoice for a project (nothing is emailed yet). */
+  async createProjectInvoice(projectId: string, draft: InvoiceDraft): Promise<void> {
+    await this.callApi('/api/project-invoice', { action: 'create', projectId, ...draft });
+  }
+
+  /** Publishes a draft invoice; Square then emails it to the client. */
+  async sendInvoice(squareInvoiceId: string): Promise<void> {
+    await this.callApi('/api/project-invoice', { action: 'send', invoiceId: squareInvoiceId });
+  }
+
+  private async callApi(path: string, body: unknown): Promise<unknown> {
+    const { data } = await this.db.auth.getSession();
+    const response = await fetch(path, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${data.session?.access_token ?? ''}`,
+      },
+      body: JSON.stringify(body),
+    });
+    const json = (await response.json().catch(() => ({}))) as { error?: string };
+    if (!response.ok) throw new Error(json.error ?? `Request failed (${response.status}).`);
+    return json;
   }
 
   async subscriptions(clientId?: string): Promise<Subscription[]> {

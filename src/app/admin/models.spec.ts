@@ -1,4 +1,4 @@
-import { isOverdue, isUnpaid, monthlyAmount } from './models';
+import { Invoice, invoiceDraftFor, isOverdue, isUnpaid, monthlyAmount, openInvoiceFor } from './models';
 
 describe('admin billing helpers', () => {
   const today = new Date('2026-11-04T12:00:00Z');
@@ -70,5 +70,31 @@ describe('support hours helpers', () => {
     expect(parseDuration('.25')).toBe(15);
     expect(parseDuration('abc')).toBeNull();
     expect(parseDuration('0')).toBeNull();
+  });
+});
+
+describe('project invoice helpers', () => {
+  const today = new Date(2026, 10, 5);
+
+  it('splits jobs of $500 or more and uses the project due date', () => {
+    expect(invoiceDraftFor({ quoted_amount: 800, due_date: '2026-11-20' }, today)).toEqual({
+      amount: 800,
+      split: true,
+      depositDue: '2026-11-05',
+      balanceDue: '2026-11-20',
+      description: '',
+    });
+  });
+
+  it('bills small jobs in one payment due in two weeks when there is no future due date', () => {
+    const draft = invoiceDraftFor({ quoted_amount: 125, due_date: '2026-10-01' }, today);
+    expect(draft.split).toBeFalse();
+    expect(draft.balanceDue).toBe('2026-11-19');
+  });
+
+  it('ignores canceled invoices when finding a project invoice', () => {
+    const base = { square_invoice_id: 'x', project_id: 'p1' } as Invoice;
+    expect(openInvoiceFor('p1', [{ ...base, status: 'canceled' }])).toBeUndefined();
+    expect(openInvoiceFor('p1', [{ ...base, status: 'draft' }])?.status).toBe('draft');
   });
 });
