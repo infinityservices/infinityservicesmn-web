@@ -1,0 +1,121 @@
+<div class="page-head">
+  <div>
+    <h1>Projects</h1>
+    <div class="muted">
+      {{ activeCount() }} of {{ jobLimit }} active job slots in use
+      @if (activeCount() > jobLimit) {
+        <span class="badge amber">Over your limit</span>
+      }
+    </div>
+  </div>
+  <div class="actions" style="margin: 0">
+    <button type="button" class="a-btn" (click)="showClosed.set(!showClosed())">
+      {{ showClosed() ? 'Hide done and cancelled' : 'Show done and cancelled' }}
+    </button>
+    <button type="button" class="a-btn primary" (click)="showForm.set(!showForm())" [disabled]="clients().length === 0">
+      {{ showForm() ? 'Cancel' : 'New project' }}
+    </button>
+  </div>
+</div>
+
+@if (error()) {
+  <div class="error-box">{{ error() }}</div>
+}
+
+@if (showForm()) {
+  <form class="card" (ngSubmit)="create()">
+    <h2>New project</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label for="np-client">Client *</label>
+        <select id="np-client" name="client_id" required [(ngModel)]="draft.client_id">
+          <option value="" disabled>Choose a client</option>
+          @for (c of clients(); track c.id) {
+            <option [value]="c.id">{{ c.name }}{{ c.business ? ' (' + c.business + ')' : '' }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="np-title">Title *</label>
+        <input id="np-title" name="title" required [(ngModel)]="draft.title" />
+      </div>
+      <div class="field">
+        <label for="np-kind">Type</label>
+        <select id="np-kind" name="kind" [(ngModel)]="draft.kind">
+          @for (k of kinds; track k.value) {
+            <option [value]="k.value">{{ k.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="np-status">Status</label>
+        <select id="np-status" name="status" [(ngModel)]="draft.status">
+          @for (s of statuses; track s.value) {
+            <option [value]="s.value">{{ s.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="np-amount">Quoted amount ($)</label>
+        <input id="np-amount" name="quoted_amount" type="number" min="0" [(ngModel)]="draft.quoted_amount" />
+      </div>
+      <div class="field">
+        <label for="np-due">Due date</label>
+        <input id="np-due" name="due_date" type="date" [(ngModel)]="draft.due_date" />
+      </div>
+    </div>
+    <div class="actions">
+      <button type="submit" class="a-btn primary" [disabled]="busy() || !draft.title.trim() || !draft.client_id">Create project</button>
+    </div>
+  </form>
+}
+
+@if (loading()) {
+  <p class="empty">Loading…</p>
+} @else if (clients().length === 0) {
+  <section class="card"><p class="empty">Add a client first, then create projects for them.</p></section>
+} @else {
+  @for (group of groups(); track group.status) {
+    <section class="card">
+      <h2>{{ group.label }} ({{ group.items.length }})</h2>
+      @if (group.items.length === 0) {
+        <p class="empty">None.</p>
+      } @else {
+        <div class="table-wrap">
+          <table class="a-table">
+            <tbody>
+              @for (p of group.items; track p.id) {
+                <tr>
+                  <td>
+                    <strong>{{ p.title }}</strong>
+                    <div class="muted">
+                      <a [routerLink]="['/admin/clients', p.client_id]">{{ p.clients?.business || p.clients?.name }}</a>
+                      · {{ kindLabel(p.kind) }}
+                    </div>
+                  </td>
+                  <td class="num">
+                    @if (p.quoted_amount != null) {
+                      {{ p.quoted_amount | currency: 'USD' : 'symbol' : '1.0-0' }}
+                    }
+                  </td>
+                  <td class="num muted">
+                    @if (p.due_date) {
+                      Due {{ p.due_date | date: 'MMM d' }}
+                    }
+                  </td>
+                  <td class="num">
+                    <select [ngModel]="p.status" (ngModelChange)="setStatus(p, $event)" [disabled]="busy()" [attr.aria-label]="'Status of ' + p.title">
+                      @for (s of statuses; track s.value) {
+                        <option [value]="s.value">{{ s.label }}</option>
+                      }
+                    </select>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+}

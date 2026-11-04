@@ -1,0 +1,130 @@
+<div class="page-head">
+  <div>
+    <h1>Billing</h1>
+    <div class="muted">Mirrored from Square and Stripe. Make changes there; they show up here automatically.</div>
+  </div>
+  <div class="actions" style="margin: 0">
+    <a class="a-btn" href="https://app.squareup.com/dashboard/invoices" target="_blank" rel="noopener">Square invoices</a>
+    <a class="a-btn" href="https://dashboard.stripe.com/subscriptions" target="_blank" rel="noopener">Stripe subscriptions</a>
+  </div>
+</div>
+
+@if (error()) {
+  <div class="error-box">{{ error() }}</div>
+}
+
+<section class="card">
+  <h2>Job invoices (Square)</h2>
+  <div class="filters" role="group" aria-label="Filter invoices">
+    @for (f of filters; track f.value) {
+      <button type="button" class="chip-btn" [class.on]="filter() === f.value" (click)="filter.set(f.value)">
+        {{ f.label }} ({{ count(f.value) }})
+      </button>
+    }
+  </div>
+  @if (loading()) {
+    <p class="empty">Loading…</p>
+  } @else if (visible().length === 0) {
+    <p class="empty">No invoices here. New Square invoices appear once the webhook is connected.</p>
+  } @else {
+    <div class="table-wrap">
+      <table class="a-table">
+        <thead>
+          <tr>
+            <th>Invoice</th>
+            <th>Client</th>
+            <th class="num">Amount</th>
+            <th>Due</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (inv of visible(); track inv.id) {
+            <tr>
+              <td>
+                @if (inv.public_url) {
+                  <a [href]="inv.public_url" target="_blank" rel="noopener">#{{ inv.invoice_number || inv.square_invoice_id }}</a>
+                } @else {
+                  #{{ inv.invoice_number || inv.square_invoice_id }}
+                }
+                <div class="muted">{{ inv.title }}</div>
+              </td>
+              <td>
+                @if (inv.client_id) {
+                  <a [routerLink]="['/admin/clients', inv.client_id]">{{ inv.clients?.name }}</a>
+                } @else {
+                  <div class="muted">{{ inv.recipient_name || inv.recipient_email }}</div>
+                  <select [ngModel]="''" (ngModelChange)="link(inv, $event)" aria-label="Link to client">
+                    <option value="">Link to client…</option>
+                    @for (c of clients(); track c.id) {
+                      <option [value]="c.id">{{ c.name }}</option>
+                    }
+                  </select>
+                }
+              </td>
+              <td class="num">{{ inv.amount | currency: 'USD' }}</td>
+              <td class="muted">{{ inv.due_date | date: 'MMM d, y' }}</td>
+              <td>
+                @if (isOverdue(inv)) {
+                  <span class="badge red">Overdue</span>
+                } @else {
+                  <span class="badge" [class.green]="inv.status === 'paid'" [class.amber]="inv.status === 'unpaid'">{{ inv.status.replace('_', ' ') }}</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+<section class="card">
+  <div class="page-head" style="margin-bottom: 8px">
+    <h2 style="margin: 0">Support plans (Stripe)</h2>
+    <span class="muted">{{ monthlySupport() | currency: 'USD' : 'symbol' : '1.0-0' }} per month</span>
+  </div>
+  @if (subscriptions().length === 0) {
+    <p class="empty">
+      No support subscriptions yet. They appear here when a client with a linked Stripe customer subscribes.
+    </p>
+  } @else {
+    <div class="table-wrap">
+      <table class="a-table">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Plan</th>
+            <th class="num">Amount</th>
+            <th>Renews</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of subscriptions(); track s.id) {
+            <tr>
+              <td>
+                @if (s.client_id) {
+                  <a [routerLink]="['/admin/clients', s.client_id]">{{ s.clients?.name }}</a>
+                } @else {
+                  <span class="muted">{{ s.stripe_customer_id }}</span>
+                }
+              </td>
+              <td>{{ s.plan_name || 'Support plan' }}</td>
+              <td class="num">{{ s.amount | currency: 'USD' }}/{{ s.billing_interval || 'month' }}</td>
+              <td class="muted">
+                {{ s.current_period_end | date: 'MMM d, y' }}
+                @if (s.cancel_at_period_end) {
+                  <span class="badge amber">Cancels</span>
+                }
+              </td>
+              <td>
+                <span class="badge" [class.green]="s.status === 'active'" [class.red]="s.status === 'past_due' || s.status === 'unpaid'">{{ s.status.replace('_', ' ') }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

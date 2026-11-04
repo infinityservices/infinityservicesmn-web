@@ -1,0 +1,16 @@
+<div class="login-page">
+  <form class="login-card" (ngSubmit)="signIn()">
+    <img src="brand/logo.webp" alt="Infinity Services" width="180" height="83" />
+    <h1>Business admin</h1>
+    @if (error()) {
+      <p class="login-error" role="alert">{{ error() }}</p>
+    }
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" autocomplete="username" required [(ngModel)]="email" />
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required [(ngModel)]="password" />
+    <button type="submit" class="btn btn-primary" [disabled]="busy()">
+      {{ busy() ? 'Signing in…' : 'Sign in' }}
+    </button>
+  </form>
+</div>
