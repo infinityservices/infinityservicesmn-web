@@ -28,7 +28,14 @@ npm run test:api   # Vitest specs for the /api/contact function
    - `CONTACT_FROM_EMAIL` — verified sending address
 3. Submit a live test through the deployed `/contact` page and confirm the email arrives.
 
-Until all three environment variables are set, `/api/contact` returns a 500 and the contact form will not work.
+### Saving leads to Supabase
+
+Each submission is also saved to the `leads` table in the **Infinity Services Admin** Supabase project, for the upcoming `/admin` area. The schema lives in `supabase/migrations/`.
+
+- `SUPABASE_URL` — the project's API URL
+- `SUPABASE_SERVICE_ROLE_KEY` — server-side only; never expose it to the browser
+
+Email and the database save run side by side. The visitor sees success if either one works, so an outage in one never loses an inquiry. With neither email nor Supabase configured, `/api/contact` returns a 500.
 
 ## Deployment
 

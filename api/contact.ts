@@ -1,6 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
-import { isHoneypotTriggered, validateContactPayload } from './_lib/validate-contact';
+import { getSupabaseConfig, saveLead } from './_lib/save-lead';
+import { isHoneypotTriggered, validateContactPayload, type ContactPayload } from './_lib/validate-contact';
+
+const SUBJECTS: Record<ContactPayload['kind'], (name: string) => string> = {
+  quick: (name) => `New contact form message from ${name}`,
+  project: (name) => `New project request from ${name}`,
+  beta: (name) => `InfiniHerd beta signup from ${name}`,
+};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -22,37 +29,57 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const toEmail = process.env['CONTACT_TO_EMAIL'];
   const fromEmail = process.env['CONTACT_FROM_EMAIL'];
   const apiKey = process.env['RESEND_API_KEY'];
+  const emailConfigured = Boolean(toEmail && fromEmail && apiKey);
+  const supabase = getSupabaseConfig();
 
-  if (!toEmail || !fromEmail || !apiKey) {
+  if (!emailConfigured) {
     console.error('Missing contact form email configuration.');
+  }
+  if (!supabase) {
+    console.error('Missing Supabase configuration; lead will not be saved.');
+  }
+  if (!emailConfigured && !supabase) {
     res.status(500).json({ error: 'Contact form is temporarily unavailable.' });
     return;
   }
 
-  const resend = new Resend(apiKey);
-  const { name, email, message, kind } = result.data;
-  const subjects: Record<typeof kind, string> = {
-    quick: `New contact form message from ${name}`,
-    project: `New project request from ${name}`,
-    beta: `InfiniHerd beta signup from ${name}`,
+  const lead = result.data;
+
+  // Email and database save run side by side. Either one succeeding means the
+  // inquiry reached Jeremy, so the visitor sees success.
+  const sendEmail = async () => {
+    if (!emailConfigured) {
+      throw new Error('Email not configured.');
+    }
+    const sendResult = await new Resend(apiKey).emails.send({
+      from: fromEmail!,
+      to: toEmail!,
+      replyTo: lead.email,
+      subject: SUBJECTS[lead.kind](lead.name),
+      text: `From: ${lead.name} <${lead.email}>\n\n${lead.message}`,
+    });
+    if (sendResult.error) {
+      throw sendResult.error;
+    }
   };
 
-  let sendError: unknown = null;
-  let sendResult: Awaited<ReturnType<typeof resend.emails.send>> | null = null;
-  try {
-    sendResult = await resend.emails.send({
-      from: fromEmail,
-      to: toEmail,
-      replyTo: email,
-      subject: subjects[kind],
-      text: `From: ${name} <${email}>\n\n${message}`,
-    });
-  } catch (err) {
-    sendError = err;
+  const storeLead = async () => {
+    if (!supabase) {
+      throw new Error('Supabase not configured.');
+    }
+    await saveLead(lead, supabase);
+  };
+
+  const [emailOutcome, saveOutcome] = await Promise.allSettled([sendEmail(), storeLead()]);
+
+  if (emailOutcome.status === 'rejected' && emailConfigured) {
+    console.error('Failed to send contact email:', emailOutcome.reason);
+  }
+  if (saveOutcome.status === 'rejected' && supabase) {
+    console.error('Failed to save lead:', saveOutcome.reason);
   }
 
-  if (sendError || sendResult?.error) {
-    console.error('Failed to send contact email:', sendError ?? sendResult?.error);
+  if (emailOutcome.status === 'rejected' && saveOutcome.status === 'rejected') {
     res.status(502).json({ error: 'Failed to send your message. Please try again.' });
     return;
   }
