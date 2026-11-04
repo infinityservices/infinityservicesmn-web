@@ -13,10 +13,10 @@
         <div class="project-copy">
           <div class="project-title">
             <h2>{{ project.name }}</h2>
-            @if (project.status === 'live') {
-              <span class="status status-live">Live</span>
-            } @else {
-              <span class="status status-soon">Coming soon</span>
+            @switch (project.status) {
+              @case ('live') { <span class="status status-live">Live</span> }
+              @case ('beta') { <span class="status status-beta">Beta</span> }
+              @default { <span class="status status-soon">Coming soon</span> }
             }
           </div>
           <p class="tagline">{{ project.tagline }}</p>
@@ -26,7 +26,7 @@
               <li>{{ feature }}</li>
             }
           </ul>
-          @if (project.status === 'live') {
+          @if (project.url) {
             <a [href]="project.url" target="_blank" rel="noopener" class="btn btn-primary">
               Visit {{ project.name }}
             </a>

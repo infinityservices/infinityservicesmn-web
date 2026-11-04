@@ -25,11 +25,17 @@ describe('ProductsComponent', () => {
     expect(text).toContain('InfiniTrack');
   });
 
-  it('links only the live project to its production domain', () => {
+  it('links only InfiniTrack to its own domain', () => {
     const hrefs = Array.from(
       (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLAnchorElement>('a[target="_blank"]'),
     ).map((a) => a.getAttribute('href'));
     expect(hrefs).toEqual(['https://infinitrack.app']);
+  });
+
+  it('marks InfiniTrack as in beta', () => {
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.status-beta')?.textContent).toContain('Beta');
+    expect(el.querySelector('.status-live')).toBeNull();
   });
 
   it('marks InfiniHerd as coming soon with a beta signup link', () => {
