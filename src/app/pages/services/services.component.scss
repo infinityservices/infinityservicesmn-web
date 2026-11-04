@@ -46,6 +46,20 @@
   }
 }
 
+.cost-note {
+  max-width: 760px;
+
+  h2 {
+    margin-bottom: 14px;
+  }
+
+  p {
+    color: var(--color-text-secondary);
+    line-height: 1.75;
+    margin-bottom: 14px;
+  }
+}
+
 @media (max-width: 860px) {
   .offering {
     grid-template-columns: 1fr;
