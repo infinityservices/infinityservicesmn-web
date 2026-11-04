@@ -30,7 +30,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const resend = new Resend(apiKey);
-  const { name, email, message } = result.data;
+  const { name, email, message, kind } = result.data;
+  const subjects: Record<typeof kind, string> = {
+    quick: `New contact form message from ${name}`,
+    project: `New project request from ${name}`,
+    beta: `InfiniHerd beta signup from ${name}`,
+  };
 
   let sendError: unknown = null;
   let sendResult: Awaited<ReturnType<typeof resend.emails.send>> | null = null;
@@ -39,7 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       from: fromEmail,
       to: toEmail,
       replyTo: email,
-      subject: `New contact form message from ${name}`,
+      subject: subjects[kind],
       text: `From: ${name} <${email}>\n\n${message}`,
     });
   } catch (err) {

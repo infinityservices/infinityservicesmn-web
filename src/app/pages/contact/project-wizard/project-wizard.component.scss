@@ -1,0 +1,302 @@
+:host {
+  display: block;
+  scroll-margin-top: 100px;
+}
+
+.wizard {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.progress {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.dot {
+  flex: 1;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--color-border);
+
+  &.done {
+    background: var(--color-primary);
+  }
+
+  &.current {
+    background: var(--color-primary);
+    opacity: 0.55;
+  }
+}
+
+.step-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 18px;
+}
+
+fieldset {
+  border: none;
+}
+
+legend {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-slate-900);
+  margin-bottom: 14px;
+}
+
+.help {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  margin: -6px 0 16px;
+}
+
+.group-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-slate-700);
+  margin: 4px 0 10px;
+}
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.choice {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-slate-300);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+
+  strong {
+    font-size: 15px;
+  }
+
+  span {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.45;
+  }
+
+  &:hover {
+    border-color: var(--color-primary);
+  }
+
+  &.selected {
+    border: 2px solid var(--color-primary);
+    padding: 13px 15px;
+    background: var(--color-primary-light);
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* Radios stay in the DOM for keyboard and screen reader use, but are visually hidden. */
+.choice input,
+.chip-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.chip-toggle {
+  position: relative;
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-slate-300);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-primary);
+  }
+
+  &.selected {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+  }
+
+  &:focus-visible,
+  &:focus-within {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-slate-700);
+  }
+
+  .optional {
+    font-weight: 400;
+    color: var(--color-text-secondary);
+  }
+
+  input,
+  textarea {
+    font-family: inherit;
+    font-size: 15px;
+    padding: 10px 14px;
+    border: 1px solid var(--color-slate-300);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 1px var(--color-primary);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.review {
+  h3 {
+    font-size: 22px;
+    margin-bottom: 14px;
+  }
+
+  dl > div {
+    display: grid;
+    grid-template-columns: 150px 1fr auto;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  dt {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-slate-700);
+  }
+
+  dd {
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .pre {
+    white-space: pre-line;
+  }
+}
+
+.edit,
+.link-button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.step-error {
+  margin: 4px 0 12px;
+  font-size: 14px;
+}
+
+.field-error {
+  color: var(--color-danger);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.switch {
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.alert {
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 12px 0;
+}
+
+.alert-success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.alert-error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+@media (max-width: 600px) {
+  .wizard {
+    padding: 20px;
+  }
+
+  .choice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .review dl > div {
+    grid-template-columns: 1fr auto;
+
+    dt {
+      grid-column: 1 / -1;
+    }
+  }
+}

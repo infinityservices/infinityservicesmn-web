@@ -90,5 +90,35 @@ describe('ContactComponent', () => {
     expect((betaFixture.nativeElement as HTMLElement).querySelector('h1')?.textContent).toContain(
       'InfiniHerd beta',
     );
+    expect(betaFixture.componentInstance.mode()).toBe('quick');
+    expect((betaFixture.nativeElement as HTMLElement).querySelector('.tabs')).toBeNull();
+  });
+
+  it('shows the project planner by default', () => {
+    expect(fixture.componentInstance.mode()).toBe('project');
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-project-wizard')).toBeTruthy();
+  });
+
+  it('switches to the quick message form', () => {
+    fixture.componentInstance.mode.set('quick');
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('app-project-wizard')).toBeNull();
+    expect(el.querySelector('#message')).toBeTruthy();
+  });
+
+  it('tags quick messages so the email subject is right', async () => {
+    const fetchSpy = spyOn(window, 'fetch').and.resolveTo(
+      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    );
+    fixture.componentInstance.form.setValue({
+      name: 'Jane Doe',
+      email: 'jane@example.com',
+      message: 'Hello there.',
+      website: '',
+    });
+    await fixture.componentInstance.submit();
+    const body = JSON.parse(fetchSpy.calls.mostRecent().args[1]!.body as string);
+    expect(body.kind).toBe('quick');
   });
 });

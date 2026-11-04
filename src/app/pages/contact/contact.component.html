@@ -5,14 +5,33 @@
       <p>Tell me a little about your farm and I'll be in touch about getting you set up.</p>
     } @else {
       <h1>Tell me about your project</h1>
-      <p>What are you trying to fix or build? I usually reply within a business day.</p>
+      <p>Answer a few quick questions, or just send me a note. Either way, I read every one myself.</p>
     }
   </div>
 </section>
 
 <section class="section">
   <div class="container contact-grid">
-    <div class="narrow">
+    <div class="main-col">
+    @if (!isBetaSignup()) {
+      <div class="tabs" role="tablist" aria-label="How would you like to get in touch?">
+        <button type="button" role="tab" id="tab-project" aria-controls="panel-project" [attr.aria-selected]="mode() === 'project'" [class.active]="mode() === 'project'" (click)="mode.set('project')">
+          Plan a project
+          <span>A few quick questions, about 2 minutes</span>
+        </button>
+        <button type="button" role="tab" id="tab-quick" aria-controls="panel-quick" [attr.aria-selected]="mode() === 'quick'" [class.active]="mode() === 'quick'" (click)="mode.set('quick')">
+          Quick message
+          <span>Just a name, email, and note</span>
+        </button>
+      </div>
+    }
+
+    @if (mode() === 'project') {
+      <div id="panel-project" role="tabpanel" aria-labelledby="tab-project">
+        <app-project-wizard (switchToQuick)="mode.set('quick')" />
+      </div>
+    } @else {
+    <div id="panel-quick" role="tabpanel" aria-labelledby="tab-quick" class="narrow">
     @if (state() === 'success') {
       <div class="alert alert-success">
         Thanks, your message is on its way. I'll get back to you soon.
@@ -56,6 +75,8 @@
           {{ state() === 'submitting' ? 'Sending…' : 'Send Message' }}
         </button>
       </form>
+    }
+    </div>
     }
     </div>
 

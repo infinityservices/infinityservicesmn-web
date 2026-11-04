@@ -42,6 +42,47 @@
   max-width: 560px;
 }
 
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  button {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    text-align: left;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 14px 18px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-alt);
+    color: var(--color-slate-900);
+    cursor: pointer;
+
+    span {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--color-text-secondary);
+    }
+
+    &.active {
+      background: var(--color-surface-raised);
+      border: 2px solid var(--color-primary);
+      padding: 13px 17px;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+  }
+}
+
 .field-group {
   display: flex;
   flex-direction: column;
