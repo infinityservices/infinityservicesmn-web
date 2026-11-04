@@ -2,22 +2,22 @@ import { PHOTOS } from './photos';
 
 export interface Project {
   name: string;
-  status: 'live' | 'coming-soon';
+  status: 'live' | 'beta' | 'coming-soon';
   tagline: string;
   description: string;
   features: string[];
   photo: { src: string; alt: string };
-  /** Outbound link for live projects. */
+  /** Outbound link for projects people can use today (live or beta). */
   url?: string;
 }
 
 export const PROJECTS: Project[] = [
   {
     name: 'InfiniTrack',
-    status: 'live',
+    status: 'beta',
     tagline: 'Inventory and cost tracking for small sellers',
     description:
-      'I built InfiniTrack to keep stock counts, costs, and an online store in sync without spreadsheets. It handles FIFO cost of goods sold, barcodes, and a Wix storefront connection, so the numbers stay right while you get on with selling.',
+      "I built InfiniTrack to keep stock counts, costs, and an online store in sync without spreadsheets. It handles FIFO cost of goods sold, barcodes, and a Wix storefront connection, so the numbers stay right while you get on with selling. It's in beta now, with the full launch planned for January.",
     features: [
       'FIFO cost of goods sold, calculated for you',
       'Wix storefront sync',

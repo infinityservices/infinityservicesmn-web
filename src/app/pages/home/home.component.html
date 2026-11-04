@@ -75,14 +75,14 @@
           <div class="project-body">
             <div class="project-title">
               <h3>{{ project.name }}</h3>
-              @if (project.status === 'live') {
-                <span class="status status-live">Live</span>
-              } @else {
-                <span class="status status-soon">Coming soon</span>
+              @switch (project.status) {
+                @case ('live') { <span class="status status-live">Live</span> }
+                @case ('beta') { <span class="status status-beta">Beta</span> }
+                @default { <span class="status status-soon">Coming soon</span> }
               }
             </div>
             <p>{{ project.tagline }}</p>
-            @if (project.status === 'live') {
+            @if (project.url) {
               <a [href]="project.url" target="_blank" rel="noopener" class="link-more">Visit {{ project.name }} &rarr;</a>
             } @else {
               <a routerLink="/contact" [queryParams]="{ topic: betaTopic }" class="link-more">Join the beta &rarr;</a>
