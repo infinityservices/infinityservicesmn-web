@@ -4,14 +4,19 @@ import { RouterLink } from '@angular/router';
 import { AdminDataService } from '../admin-data.service';
 import {
   ACTIVE_JOB_LIMIT,
+  Client,
   Invoice,
   LEAD_KIND_LABELS,
   Lead,
   Project,
   Subscription,
+  TimeEntry,
+  formatMinutes,
   isOverdue,
   isUnpaid,
   monthlyAmount,
+  monthRange,
+  planUsage,
 } from '../models';
 
 @Component({
@@ -29,6 +34,9 @@ export class DashboardComponent implements OnInit {
   readonly projects = signal<Project[]>([]);
   readonly invoices = signal<Invoice[]>([]);
   readonly subscriptions = signal<Subscription[]>([]);
+  readonly clients = signal<Client[]>([]);
+  readonly monthEntries = signal<TimeEntry[]>([]);
+  readonly fmt = formatMinutes;
 
   readonly kindLabels = LEAD_KIND_LABELS;
   readonly jobLimit = ACTIVE_JOB_LIMIT;
@@ -46,6 +54,17 @@ export class DashboardComponent implements OnInit {
   readonly monthlySupport = computed(() =>
     this.activeSubs().reduce((sum, s) => sum + monthlyAmount(s), 0),
   );
+  /** Plan clients this month, most used first. */
+  readonly supportUsage = computed(() =>
+    this.clients()
+      .filter((c) => c.support_tier !== 'none')
+      .map((c) => ({
+        client: c,
+        usage: planUsage(this.monthEntries().filter((e) => e.client_id === c.id), c.support_tier),
+      }))
+      .sort((a, b) => b.usage.ratio - a.usage.ratio),
+  );
+
   readonly upcoming = computed(() =>
     this.activeProjects()
       .filter((p) => p.due_date)
@@ -54,12 +73,17 @@ export class DashboardComponent implements OnInit {
 
   async ngOnInit() {
     try {
-      const [leads, projects, invoices, subscriptions] = await Promise.all([
+      const { start, end } = monthRange(new Date());
+      const [leads, projects, invoices, subscriptions, clients, monthEntries] = await Promise.all([
         this.data.leads(),
         this.data.projects(),
         this.data.invoices(),
         this.data.subscriptions(),
+        this.data.clients(),
+        this.data.timeEntries({ from: start, to: end }),
       ]);
+      this.clients.set(clients);
+      this.monthEntries.set(monthEntries);
       this.leads.set(leads);
       this.projects.set(projects);
       this.invoices.set(invoices);

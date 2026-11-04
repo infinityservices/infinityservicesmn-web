@@ -156,3 +156,101 @@ export function monthlyAmount(sub: Pick<Subscription, 'amount' | 'billing_interv
       return amount;
   }
 }
+
+// Support hours ---------------------------------------------------------
+
+export type TimeCategory = 'support' | 'project' | 'hourly';
+
+export interface TimeEntry {
+  id: string;
+  created_at: string;
+  client_id: string;
+  project_id: string | null;
+  work_date: string;
+  minutes: number;
+  category: TimeCategory;
+  description: string;
+}
+
+export const TIME_CATEGORIES: { value: TimeCategory; label: string }[] = [
+  { value: 'support', label: 'Support plan' },
+  { value: 'project', label: 'Project work' },
+  { value: 'hourly', label: 'Hourly (billable)' },
+];
+
+/** Monthly support time included in each plan, from the fee schedule draft. */
+export const PLAN_ALLOWANCE_MINUTES: Record<SupportTier, number> = {
+  none: 0,
+  basic: 30,
+  standard: 90,
+  priority: 180,
+};
+
+/** Fee schedule draft: $100/hr, or $90/hr for support plan members. */
+export const HOURLY_RATE = 100;
+export const PLAN_MEMBER_HOURLY_RATE = 90;
+
+/** First and last day (YYYY-MM-DD) of the calendar month containing `date`, in local time. */
+export function monthRange(date: Date): { start: string; end: string } {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const y = date.getFullYear();
+  const m = date.getMonth();
+  const last = new Date(y, m + 1, 0).getDate();
+  return { start: `${y}-${pad(m + 1)}-01`, end: `${y}-${pad(m + 1)}-${pad(last)}` };
+}
+
+export interface PlanUsage {
+  used: number;
+  allowance: number;
+  remaining: number;
+  overage: number;
+  /** Share of the allowance used, 0–1+ (capped at 1 for bars via Math.min). */
+  ratio: number;
+  /** Estimated charge for time over the allowance, at the plan member rate. */
+  overageCharge: number;
+}
+
+/** Support minutes used in a month against the client's plan allowance. */
+export function planUsage(entries: Pick<TimeEntry, 'minutes' | 'category'>[], tier: SupportTier): PlanUsage {
+  const used = entries.filter((e) => e.category === 'support').reduce((sum, e) => sum + e.minutes, 0);
+  const allowance = PLAN_ALLOWANCE_MINUTES[tier];
+  const overage = Math.max(0, used - allowance);
+  const rate = tier === 'none' ? HOURLY_RATE : PLAN_MEMBER_HOURLY_RATE;
+  return {
+    used,
+    allowance,
+    remaining: Math.max(0, allowance - used),
+    overage,
+    ratio: allowance > 0 ? used / allowance : used > 0 ? 1 : 0,
+    overageCharge: Math.round((overage / 60) * rate * 100) / 100,
+  };
+}
+
+/** 95 → "1 hr 35 min", 30 → "30 min", 120 → "2 hr". */
+export function formatMinutes(total: number): string {
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  if (h === 0) return `${m} min`;
+  return m === 0 ? `${h} hr` : `${h} hr ${m} min`;
+}
+
+/** Parses "1:30", "1.5", "1.5h", "90", "90m" into minutes (bare numbers are minutes). */
+export function parseDuration(input: string): number | null {
+  const s = input.trim().toLowerCase();
+  if (!s) return null;
+  let minutes: number;
+  const clock = /^(\d+):([0-5]\d)$/.exec(s);
+  if (clock) {
+    minutes = Number(clock[1]) * 60 + Number(clock[2]);
+  } else if (/^\d+(\.\d+)?\s*(h|hr|hrs|hours?)$/.test(s)) {
+    minutes = parseFloat(s) * 60;
+  } else if (/^\d+\s*(m|min|mins|minutes?)?$/.test(s)) {
+    minutes = parseFloat(s);
+  } else if (/^\d*\.\d+$/.test(s)) {
+    minutes = parseFloat(s) * 60;
+  } else {
+    return null;
+  }
+  minutes = Math.round(minutes);
+  return minutes > 0 && minutes <= 1440 ? minutes : null;
+}
