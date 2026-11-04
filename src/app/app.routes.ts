@@ -18,7 +18,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/products/products.component').then((m) => m.ProductsComponent),
   },
   {
-    // Draft: not linked from the navbar yet.
     path: 'pricing',
     title: 'Pricing | Infinity Services',
     loadComponent: () => import('./pages/pricing/pricing.component').then((m) => m.PricingComponent),

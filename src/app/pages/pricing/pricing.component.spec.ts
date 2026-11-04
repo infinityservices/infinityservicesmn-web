@@ -15,15 +15,13 @@ describe('PricingComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders the job menu and support plans', () => {
-    const el = fixture.nativeElement as HTMLElement;
-    expect(el.querySelectorAll('.job-card').length).toBe(4);
-    expect(el.querySelectorAll('.plan-card').length).toBe(3);
+  it('lists the ballpark prices', () => {
+    const rows = (fixture.nativeElement as HTMLElement).querySelectorAll('.price-row');
+    expect(rows.length).toBe(4);
   });
 
-  it('keeps the draft page out of search results', () => {
-    expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toContain(
-      'noindex',
-    );
+  it('links to the contact page for a quote', () => {
+    const cta = (fixture.nativeElement as HTMLElement).querySelector('.cta-band a');
+    expect(cta?.getAttribute('href')).toBe('/contact');
   });
 });
