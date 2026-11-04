@@ -58,6 +58,17 @@ A private admin area for leads, clients, projects and billing, lazy-loaded so pu
 - Square invoices attach to the client with the same Square customer ID, or else the one client with the same email (which then records the ID). Unmatched invoices show under Billing → "Not linked to a client".
 - Stripe subscriptions are saved only for customers linked to a client, so InfiniTrack/InfiniHerd subscriptions on the same Stripe account are ignored. A new Stripe customer whose email matches a client is linked automatically; otherwise paste the `cus_…` ID on the client page.
 
+## Database migrations
+
+Schema changes live in `supabase/migrations/` and are applied by GitHub Actions (`.github/workflows/supabase-migrations.yml`):
+
+- **Pull requests** run every migration plus the checks in `supabase/tests/` on a throwaway Postgres.
+- **Merging to `main`** runs `supabase db push`, which applies only the migrations the live database hasn't had yet.
+
+File names must keep the `<version>_<name>.sql` format, and new ones need a version later than the newest one already there (e.g. `20261105090000_add_x.sql`). Don't apply migrations by hand in the SQL editor any more, or the history gets out of step.
+
+**One-time setup:** add a repository secret named `SUPABASE_DB_URL` (GitHub → Settings → Secrets and variables → Actions). Its value is the **Session pooler** connection string from Supabase (Connect button at the top of the project → Session pooler), with your database password in place of `[YOUR-PASSWORD]`. If you don't know the password, reset it under Project Settings → Database. The session pooler is needed because GitHub's runners can't reach Supabase's direct (IPv6) address.
+
 ## Client portal (`/portal`)
 
 Clients sign in with a magic link (no password) and see their own projects, invoices (drafts hidden) and support plan, with Square "Pay now" links. They never see notes, hosting notes, the activity log or other clients. Lazy-loaded like `/admin`.
