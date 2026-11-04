@@ -16,7 +16,7 @@ export class AboutComponent {
   readonly values = [
     {
       title: 'Help, not hurt',
-      text: 'Software should make your day easier and help you grow. If a tool gets in the way, it's the wrong tool.',
+      text: "Software should make your day easier and help you grow. If a tool gets in the way, it's the wrong tool.",
     },
     {
       title: 'Keep it practical',
