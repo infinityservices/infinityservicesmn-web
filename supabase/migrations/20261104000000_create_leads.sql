@@ -36,3 +36,8 @@ for each row execute function public.set_updated_at();
 -- see nothing. The service role (used only server-side) bypasses RLS.
 -- The admin-only read/write policy is added with the /admin login in the next step.
 alter table public.leads enable row level security;
+
+-- The project does not auto-expose new tables to the Data API, so grant access
+-- explicitly. Only the server-side service role can touch leads for now; the
+-- signed-in admin role is granted alongside its RLS policy in the next step.
+grant select, insert, update, delete on public.leads to service_role;
