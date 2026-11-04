@@ -8,12 +8,12 @@ vi.mock('resend', () => ({
 }));
 
 const saveLead = vi.fn();
-vi.mock('./_lib/save-lead', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('./_lib/save-lead')>();
+vi.mock('./save-lead', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./save-lead')>();
   return { ...actual, saveLead: (...args: unknown[]) => saveLead(...args) };
 });
 
-import handler from './contact';
+import handler from '../contact';
 
 function mockRes() {
   const res: { statusCode?: number; body?: unknown; status: any; json: any } = {
