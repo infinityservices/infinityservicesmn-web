@@ -1,48 +1,58 @@
-.page-header {
-  background: var(--color-surface-alt);
-  padding: 64px 0 48px;
-
-  p {
-    color: var(--color-text-secondary);
-    font-size: 17px;
-    margin-top: 8px;
-  }
-}
-
-.section {
-  padding: 64px 0;
-}
-
-.offerings-grid {
+.offering {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 48px;
+  align-items: center;
+
+  & + & {
+    margin-top: 64px;
+  }
+
+  &.reverse app-photo {
+    order: 2;
+  }
 }
 
-.offering-card {
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: 32px;
-
-  h3 {
-    font-size: 19px;
-    margin-bottom: 12px;
+.offering-copy {
+  h2 {
+    font-size: 28px;
+    margin-bottom: 14px;
   }
 
   p {
     color: var(--color-text-secondary);
-    line-height: 1.65;
-    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 18px;
+  }
+
+  ul {
+    list-style: none;
+  }
+
+  li {
+    position: relative;
+    padding-left: 26px;
+    margin-bottom: 10px;
+    line-height: 1.55;
+    color: var(--color-text-secondary);
+
+    &::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--color-primary);
+      font-weight: 700;
+    }
   }
 }
 
-.cta-block {
-  margin-top: 56px;
-  text-align: center;
+@media (max-width: 860px) {
+  .offering {
+    grid-template-columns: 1fr;
+    gap: 24px;
 
-  p {
-    color: var(--color-text-secondary);
-    margin-bottom: 16px;
+    &.reverse app-photo {
+      order: 0;
+    }
   }
 }

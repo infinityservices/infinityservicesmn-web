@@ -19,12 +19,17 @@ describe('HomeComponent', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('renders all three service teasers', () => {
+  it('renders both service teasers', () => {
     const cards = (fixture.nativeElement as HTMLElement).querySelectorAll('.service-card');
-    expect(cards.length).toBe(3);
+    expect(cards.length).toBe(2);
   });
 
-  it('renders InfiniHerd and InfiniTrack chips', () => {
+  it('points the main call to action at the contact page', () => {
+    const cta = (fixture.nativeElement as HTMLElement).querySelector('.hero .btn-primary');
+    expect(cta?.getAttribute('href')).toBe('/contact');
+  });
+
+  it('shows InfiniTrack and InfiniHerd projects', () => {
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).toContain('InfiniHerd');
     expect(text).toContain('InfiniTrack');

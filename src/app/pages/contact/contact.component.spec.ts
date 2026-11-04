@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { ContactComponent } from './contact.component';
 
 describe('ContactComponent', () => {
@@ -7,6 +8,7 @@ describe('ContactComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ContactComponent],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ContactComponent);
@@ -66,5 +68,27 @@ describe('ContactComponent', () => {
     expect(fixture.componentInstance.state()).toBe('error');
     expect(fixture.componentInstance.errorMessage()).toBe('Email delivery failed.');
     expect(fixture.componentInstance.form.getRawValue().name).toBe('Jane Doe');
+  });
+
+  it('prefills a beta signup when opened from the InfiniHerd link', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [ContactComponent],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({ topic: 'infiniherd-beta' }) } },
+        },
+      ],
+    }).compileComponents();
+
+    const betaFixture = TestBed.createComponent(ContactComponent);
+    betaFixture.detectChanges();
+
+    expect(betaFixture.componentInstance.isBetaSignup()).toBe(true);
+    expect(betaFixture.componentInstance.form.controls.message.value).toContain('InfiniHerd beta');
+    expect((betaFixture.nativeElement as HTMLElement).querySelector('h1')?.textContent).toContain(
+      'InfiniHerd beta',
+    );
   });
 });

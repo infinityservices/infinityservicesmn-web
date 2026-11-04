@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { ProductsComponent } from './products.component';
 
 describe('ProductsComponent', () => {
@@ -7,31 +8,36 @@ describe('ProductsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProductsComponent],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductsComponent);
     fixture.detectChanges();
   });
 
-  it('creates the products page', () => {
+  it('creates the projects page', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('renders a card for InfiniHerd and InfiniTrack', () => {
+  it('renders InfiniTrack and InfiniHerd', () => {
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).toContain('InfiniHerd');
     expect(text).toContain('InfiniTrack');
   });
 
-  it('renders an outbound link for each product', () => {
-    const links = (fixture.nativeElement as HTMLElement).querySelectorAll('a[target="_blank"]');
-    expect(links.length).toBe(2);
-  });
-
-  it('links each product to its production domain', () => {
+  it('links only the live project to its production domain', () => {
     const hrefs = Array.from(
       (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLAnchorElement>('a[target="_blank"]'),
     ).map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual(['https://infiniherd.app', 'https://infinitrack.app']);
+    expect(hrefs).toEqual(['https://infinitrack.app']);
+  });
+
+  it('marks InfiniHerd as coming soon with a beta signup link', () => {
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.status-soon')?.textContent).toContain('Coming soon');
+    const beta = Array.from(el.querySelectorAll<HTMLAnchorElement>('a')).find((a) =>
+      a.textContent?.includes('beta'),
+    );
+    expect(beta?.getAttribute('href')).toBe('/contact?topic=infiniherd-beta');
   });
 });

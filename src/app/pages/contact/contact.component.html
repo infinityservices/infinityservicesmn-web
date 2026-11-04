@@ -1,15 +1,21 @@
 <section class="page-header">
   <div class="container">
-    <h1>Contact</h1>
-    <p>Tell us about your project — we usually reply within a business day.</p>
+    @if (isBetaSignup()) {
+      <h1>Join the InfiniHerd beta</h1>
+      <p>Tell me a little about your farm and I'll be in touch about getting you set up.</p>
+    } @else {
+      <h1>Tell me about your project</h1>
+      <p>What are you trying to fix or build? I usually reply within a business day.</p>
+    }
   </div>
 </section>
 
 <section class="section">
-  <div class="container narrow">
+  <div class="container contact-grid">
+    <div class="narrow">
     @if (state() === 'success') {
       <div class="alert alert-success">
-        Thanks — your message has been sent. We'll be in touch soon.
+        Thanks, your message is on its way. I'll get back to you soon.
       </div>
     } @else {
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
@@ -39,7 +45,7 @@
         </div>
 
         <div class="field-group">
-          <label for="message">Message</label>
+          <label for="message">{{ isBetaSignup() ? 'Message' : 'What can I help with?' }}</label>
           <textarea id="message" rows="6" formControlName="message"></textarea>
           @if (form.controls.message.invalid && form.controls.message.touched) {
             <span class="field-error">Please enter a message.</span>
@@ -51,5 +57,19 @@
         </button>
       </form>
     }
+    </div>
+
+    <aside class="next-steps">
+      <h2>What happens next</h2>
+      <ol>
+        <li>I read your message myself and reply, usually within a business day.</li>
+        <li>If it sounds like a fit, we set up a quick call to talk it through.</li>
+        <li>You get a plain-English plan for what I'd build. No pressure and no jargon.</li>
+      </ol>
+      <p class="direct">
+        Prefer email? Write to
+        <a href="mailto:info@infinityservicesmn.com">info&#64;infinityservicesmn.com</a>.
+      </p>
+    </aside>
   </div>
 </section>

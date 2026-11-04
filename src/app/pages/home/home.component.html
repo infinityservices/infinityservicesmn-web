@@ -1,48 +1,118 @@
 <section class="hero">
-  <div class="container hero-inner">
-    <h1>Custom <span class="accent">software</span> that runs your business.</h1>
-    <p class="pitch">
-      We design and build the tools Minnesota businesses actually need — from
-      livestock management to inventory tracking — and we can build yours next.
-    </p>
-    <div class="cta-row">
-      <a routerLink="/contact" class="btn btn-primary">Start a Project</a>
-      <a routerLink="/products" class="btn btn-secondary">See Our Work</a>
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow">Hi, I'm Jeremy.</p>
+      <h1>I build software that makes your business <span class="accent">easier to run.</span></h1>
+      <p class="pitch">
+        Custom web and desktop apps for small businesses. Tools that pull your data together,
+        cut out the busywork, and fit the way you already work.
+      </p>
+      <div class="cta-row">
+        <a routerLink="/contact" class="btn btn-primary">Tell me about your project</a>
+        <a routerLink="/projects" class="btn btn-secondary">See what I'm building</a>
+      </div>
     </div>
-    <div class="chip-row">
-      <span class="chip">InfiniHerd — Livestock Management</span>
-      <span class="chip">InfiniTrack — Inventory Management</span>
-    </div>
+    <app-photo class="hero-photo" [src]="photos.homeHero.src" [alt]="photos.homeHero.alt" ratio="5 / 4" />
+  </div>
+</section>
+
+<section class="facts">
+  <div class="container facts-grid">
+    @for (fact of facts; track fact.value) {
+      <div class="fact">
+        <strong>{{ fact.value }}</strong>
+        <span>{{ fact.label }}</span>
+      </div>
+    }
   </div>
 </section>
 
 <section class="section">
   <div class="container">
-    <h2>What we do</h2>
+    <h2>What I do</h2>
     <div class="services-grid">
       @for (service of services; track service.title) {
         <div class="service-card">
           <h3>{{ service.title }}</h3>
           <p>{{ service.description }}</p>
+          <ul>
+            @for (example of service.examples; track example) {
+              <li>{{ example }}</li>
+            }
+          </ul>
         </div>
       }
     </div>
-    <a routerLink="/services" class="link-more">See all services &rarr;</a>
+    <a routerLink="/services" class="link-more">More about how I can help &rarr;</a>
   </div>
 </section>
 
 <section class="section section-alt">
   <div class="container">
-    <h2>Products we've built</h2>
-    <p class="section-lead">Real software, running in production for real Minnesota operations.</p>
-    <a routerLink="/products" class="link-more">Explore our products &rarr;</a>
+    <h2>How it works</h2>
+    <ol class="steps">
+      @for (step of steps; track step.title; let i = $index) {
+        <li class="step">
+          <span class="step-number">{{ i + 1 }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.text }}</p>
+        </li>
+      }
+    </ol>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2>What I'm building</h2>
+    <p class="section-lead">
+      Besides client work, I build my own products. Both started as tools I needed myself.
+    </p>
+    <div class="projects-grid">
+      @for (project of projects; track project.name) {
+        <article class="project-card">
+          <app-photo [src]="project.photo.src" [alt]="project.photo.alt" ratio="16 / 10" />
+          <div class="project-body">
+            <div class="project-title">
+              <h3>{{ project.name }}</h3>
+              @if (project.status === 'live') {
+                <span class="status status-live">Live</span>
+              } @else {
+                <span class="status status-soon">Coming soon</span>
+              }
+            </div>
+            <p>{{ project.tagline }}</p>
+            @if (project.status === 'live') {
+              <a [href]="project.url" target="_blank" rel="noopener" class="link-more">Visit {{ project.name }} &rarr;</a>
+            } @else {
+              <a routerLink="/contact" [queryParams]="{ topic: betaTopic }" class="link-more">Join the beta &rarr;</a>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container about-teaser">
+    <app-photo [src]="photos.aboutFarm.src" [alt]="photos.aboutFarm.alt" ratio="4 / 3" />
+    <div>
+      <h2>From the farm to IT, and back again</h2>
+      <p>
+        I grew up on a small hobby farm and have spent more than 20 years in IT. These days I'm
+        farming again too, and making products to sell at local markets. So I know what it's like
+        to run something small where every hour counts.
+      </p>
+      <a routerLink="/about" class="link-more">More about me &rarr;</a>
+    </div>
   </div>
 </section>
 
 <section class="cta-band">
   <div class="container">
-    <h2>Have a project in mind?</h2>
-    <p>Tell us what you're trying to solve — we'll tell you how we'd build it.</p>
-    <a routerLink="/contact" class="btn btn-primary">Get in Touch</a>
+    <h2>Got something that's slowing you down?</h2>
+    <p>Tell me what you're trying to fix. I'll give you an honest take on how I'd build it.</p>
+    <a routerLink="/contact" class="btn btn-primary">Tell me about your project</a>
   </div>
 </section>

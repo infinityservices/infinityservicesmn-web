@@ -1,30 +1,61 @@
 <section class="page-header">
   <div class="container">
-    <h1>About Infinity Services</h1>
-    <p>Minnesota-based software, built by people who use it too.</p>
+    <h1>About me</h1>
+    <p>I'm Jeremy, and Infinity Services is me.</p>
   </div>
 </section>
 
 <section class="section">
-  <div class="container narrow">
-    <p>
-      Infinity Services builds custom software for Minnesota businesses that
-      need more than what an off-the-shelf tool can offer. We don't start
-      from a template — we start from how your business actually runs, and
-      build the software to fit.
-    </p>
-    <p>
-      We know this works because we've done it for ourselves. InfiniHerd and
-      InfiniTrack, our two flagship products, both started as tools we built
-      to solve our own operational problems — livestock recordkeeping and
-      inventory management — before becoming production software other
-      businesses rely on every day.
-    </p>
-    <p>
-      That's the same process we bring to client work: understand the real
-      problem first, then build the smallest, sturdiest piece of software
-      that solves it.
-    </p>
-    <a routerLink="/contact" class="btn btn-primary">Let's Talk</a>
+  <div class="container story">
+    <div class="story-copy">
+      <p>
+        I grew up on a small hobby farm, and I've spent more than 20 years working in IT. Over that
+        time I've become something of a jack of all trades, with full-stack development at the
+        center of it. I've always been the person people turn to when there's a new challenge, and
+        I've always wanted to learn the next technology and find a way forward.
+      </p>
+      <p>
+        Through all of it, my goal has stayed the same: make other people's lives easier by
+        building tools that help growth and production instead of getting in the way.
+      </p>
+      <p>
+        These days I've gone back to my roots. I'm farming again and making products to sell at
+        local markets. That's where <a routerLink="/projects">InfiniHerd and InfiniTrack</a> came
+        from: I needed them myself. It's also why I build software for other small businesses. I
+        know what it's like when every hour counts.
+      </p>
+      <a routerLink="/contact" class="btn btn-primary">Tell me about your project</a>
+    </div>
+    <app-photo class="story-photo" [src]="photos.aboutFarm.src" [alt]="photos.aboutFarm.alt" ratio="4 / 5" />
+  </div>
+</section>
+
+<section class="photo-strip">
+  <div class="container strip-grid">
+    <app-photo [src]="photos.aboutMarket.src" [alt]="photos.aboutMarket.alt" ratio="4 / 3" />
+    <app-photo [src]="photos.aboutWorkspace.src" [alt]="photos.aboutWorkspace.alt" ratio="4 / 3" />
+    <app-photo [src]="photos.servicesSupport.src" [alt]="photos.servicesSupport.alt" ratio="4 / 3" />
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <h2>How I work</h2>
+    <div class="values-grid">
+      @for (value of values; track value.title) {
+        <div class="value-card">
+          <h3>{{ value.title }}</h3>
+          <p>{{ value.text }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container">
+    <h2>Let's see if I can help.</h2>
+    <p>Based in Cannon Falls, Minnesota. Happy to work with small businesses anywhere.</p>
+    <a routerLink="/contact" class="btn btn-primary">Get in touch</a>
   </div>
 </section>
