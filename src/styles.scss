@@ -1,12 +1,13 @@
 :root {
   color-scheme: light;
 
-  --color-navy: #0c1926;
-  --color-primary: #0b7480;
-  --color-primary-dark: #075560;
-  --color-primary-light: #dcf1ef;
-  --color-accent: #5e9a0c;
-  --color-accent-dark: #3f7406;
+  /* Brand colors from the 2026 Infinity Services brand package. */
+  --color-navy: #101d2e;           /* deep navy: footer and dark bands */
+  --color-primary: #3470bc;        /* royal blue */
+  --color-primary-dark: #24538f;
+  --color-primary-light: #dde7f4;
+  --color-accent: #545454;         /* logo charcoal */
+  --color-accent-dark: #3d3d3d;
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
@@ -91,12 +92,16 @@ h1, h2, h3, h4 {
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.1s ease;
+  transition: box-shadow 0.15s ease, transform 0.1s ease, background-color 0.15s ease;
   text-decoration: none;
 
   &:hover {
     text-decoration: none;
     box-shadow: var(--shadow-md);
+  }
+
+  &.btn-primary:hover {
+    background: var(--color-primary-dark);
   }
 
   &:active {
@@ -105,7 +110,7 @@ h1, h2, h3, h4 {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent-dark) 100%);
+  background: var(--color-primary);
   color: #fff;
 }
 
@@ -122,6 +127,62 @@ h1, h2, h3, h4 {
   border-radius: 9999px;
   font-size: 13px;
   font-weight: 600;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+/* Shared page building blocks */
+.page-header {
+  background: var(--color-surface-alt);
+  padding: 48px 0 40px;
+
+  p {
+    color: var(--color-text-secondary);
+    font-size: 17px;
+    margin-top: 8px;
+  }
+}
+
+.section {
+  padding: 56px 0;
+}
+
+.section-alt {
+  background: var(--color-surface-alt);
+}
+
+.cta-band {
+  background: var(--color-navy);
+  color: #fff;
+  padding: 56px 0;
+  text-align: center;
+
+  h2 {
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  p {
+    opacity: 0.85;
+    margin-bottom: 28px;
+  }
+}
+
+.status {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.status-live {
+  background: #dcf3e6;
+  color: #1d6b3f;
+}
+
+.status-soon {
   background: var(--color-primary-light);
   color: var(--color-primary-dark);
 }

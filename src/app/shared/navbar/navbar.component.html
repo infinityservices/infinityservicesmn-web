@@ -1,14 +1,14 @@
 <header class="navbar">
   <div class="container navbar-inner">
     <a routerLink="/" class="brand" aria-label="Infinity Services LLC home" (click)="closeMobileMenu()">
-      <img src="brand/logo.webp" alt="Infinity Services LLC" width="480" height="190" />
+      <img src="brand/logo.webp" alt="Infinity Services LLC" width="600" height="277" />
     </a>
 
     <nav class="nav-links" [class.open]="mobileMenuOpen()">
       <a routerLink="/services" routerLinkActive="active" (click)="closeMobileMenu()">Services</a>
-      <a routerLink="/products" routerLinkActive="active" (click)="closeMobileMenu()">Products</a>
+      <a routerLink="/projects" routerLinkActive="active" (click)="closeMobileMenu()">Projects</a>
       <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">About</a>
-      <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileMenu()" class="btn btn-primary nav-cta">Contact</a>
+      <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileMenu()" class="btn btn-primary nav-cta">Get in touch</a>
     </nav>
 
     <button

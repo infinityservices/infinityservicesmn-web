@@ -1,5 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { BETA_TOPIC } from '../../shared/projects';
 
 type SubmitState = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -10,11 +12,14 @@ type SubmitState = 'idle' | 'submitting' | 'success' | 'error';
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.scss',
 })
-export class ContactComponent {
+export class ContactComponent implements OnInit {
   readonly state = signal<SubmitState>('idle');
   readonly errorMessage = signal('');
 
+  readonly isBetaSignup = signal(false);
+
   private readonly fb = new FormBuilder();
+  private readonly route = inject(ActivatedRoute);
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
@@ -22,6 +27,15 @@ export class ContactComponent {
     message: ['', [Validators.required, Validators.maxLength(4000)]],
     website: [''],
   });
+
+  ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('topic') === BETA_TOPIC) {
+      this.isBetaSignup.set(true);
+      this.form.controls.message.setValue(
+        "I'd like to try the InfiniHerd beta. A bit about my operation: ",
+      );
+    }
+  }
 
   async submit(): Promise<void> {
     if (this.form.invalid) {

@@ -1,24 +1,69 @@
 <section class="page-header">
   <div class="container">
-    <h1>Services</h1>
-    <p>Custom software built around your business, not the other way around.</p>
+    <h1>How I can help</h1>
+    <p>Two things, done well: building the tools your business needs, and keeping them running.</p>
   </div>
 </section>
 
 <section class="section">
   <div class="container">
-    <div class="offerings-grid">
-      @for (offering of offerings; track offering.title) {
-        <div class="offering-card">
-          <h3>{{ offering.title }}</h3>
-          <p>{{ offering.description }}</p>
+    @for (offering of offerings; track offering.title; let odd = $odd) {
+      <div class="offering" [class.reverse]="odd">
+        <app-photo [src]="offering.photo.src" [alt]="offering.photo.alt" ratio="4 / 3" />
+        <div class="offering-copy">
+          <h2>{{ offering.title }}</h2>
+          <p>{{ offering.intro }}</p>
+          <ul>
+            @for (point of offering.points; track point) {
+              <li>{{ point }}</li>
+            }
+          </ul>
         </div>
-      }
-    </div>
+      </div>
+    }
+  </div>
+</section>
 
-    <div class="cta-block">
-      <p>Not sure which of these fits what you need? Let's talk it through.</p>
-      <a routerLink="/contact" class="btn btn-primary">Start a Conversation</a>
+<section class="section section-alt">
+  <div class="container cost-note">
+    <h2>AI is a tool. Experience is what makes it work.</h2>
+    <p class="lead">
+      I use modern AI tools to speed up the routine parts of building software, which keeps your
+      costs down. But anyone can use AI. What it can't do is know what to build, how the pieces
+      should fit together, or what will still hold up a year from now. That takes experience
+      building real, working systems, and I've been doing it for over 20 years.
+    </p>
+    <div class="split">
+      <div class="split-card">
+        <h3>What the AI helps with</h3>
+        <ul>
+          <li>Boilerplate and repetitive code</li>
+          <li>First drafts I then shape and refine</li>
+          <li>Repetitive tests and checks</li>
+        </ul>
+      </div>
+      <div class="split-card split-card-me">
+        <h3>What I bring</h3>
+        <ul>
+          <li>Understanding how your business actually works</li>
+          <li>Designing a system that fits, and grows with you</li>
+          <li>Reviewing and testing every piece before it ships</li>
+          <li>Knowing what <em>not</em> to build</li>
+        </ul>
+      </div>
     </div>
+    <p class="data-note">
+      The result is well-designed, well-thought-out software at a price that makes sense for a
+      small business. And I'm careful with your data: I'll always tell you up front how it's
+      handled.
+    </p>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container">
+    <h2>Not sure what you need?</h2>
+    <p>That's fine. Tell me what's bugging you and we'll figure it out together.</p>
+    <a routerLink="/contact" class="btn btn-primary">Tell me about your project</a>
   </div>
 </section>

@@ -19,8 +19,8 @@ describe('ServicesComponent', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('renders all four offering cards', () => {
-    const cards = (fixture.nativeElement as HTMLElement).querySelectorAll('.offering-card');
-    expect(cards.length).toBe(4);
+  it('renders both offerings', () => {
+    const offerings = (fixture.nativeElement as HTMLElement).querySelectorAll('.offering');
+    expect(offerings.length).toBe(2);
   });
 });

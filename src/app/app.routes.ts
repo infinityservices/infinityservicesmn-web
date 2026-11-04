@@ -3,7 +3,7 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    title: 'Infinity Services | Custom Software for Minnesota Businesses',
+    title: 'Infinity Services | Custom Software for Small Businesses',
     loadComponent: () => import('./pages/home/home.component').then((m) => m.HomeComponent),
   },
   {
@@ -11,9 +11,10 @@ export const routes: Routes = [
     title: 'Services | Infinity Services',
     loadComponent: () => import('./pages/services/services.component').then((m) => m.ServicesComponent),
   },
+  { path: 'products', redirectTo: 'projects' },
   {
-    path: 'products',
-    title: 'Products | Infinity Services',
+    path: 'projects',
+    title: 'Projects | Infinity Services',
     loadComponent: () => import('./pages/products/products.component').then((m) => m.ProductsComponent),
   },
   {

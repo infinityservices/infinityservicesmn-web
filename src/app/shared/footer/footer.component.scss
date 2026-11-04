@@ -1,7 +1,7 @@
 .footer {
-  background: var(--color-navy);
+  /* Matches the background baked into the dark logo artwork. */
+  background: #020b17;
   color: rgba(255, 255, 255, 0.85);
-  margin-top: 80px;
 }
 
 .footer-inner {
@@ -18,7 +18,7 @@
 
   img {
     display: block;
-    height: 72px;
+    height: 88px;
     width: auto;
   }
 

@@ -1,28 +1,50 @@
 <section class="page-header">
   <div class="container">
-    <h1>Products</h1>
-    <p>Real software we've built and run in production for Minnesota businesses.</p>
+    <h1>What I'm building</h1>
+    <p>My own products. Each one started as a problem I needed to solve for myself.</p>
   </div>
 </section>
 
 <section class="section">
   <div class="container">
-    <div class="products-grid">
-      @for (product of products; track product.name) {
-        <article class="product-card">
-          <h2>{{ product.name }}</h2>
-          <p class="tagline">{{ product.tagline }}</p>
-          <p class="description">{{ product.description }}</p>
+    @for (project of projects; track project.name; let odd = $odd) {
+      <article class="project" [class.reverse]="odd">
+        <app-photo [src]="project.photo.src" [alt]="project.photo.alt" ratio="16 / 10" fit="contain" />
+        <div class="project-copy">
+          <div class="project-title">
+            <h2>{{ project.name }}</h2>
+            @if (project.status === 'live') {
+              <span class="status status-live">Live</span>
+            } @else {
+              <span class="status status-soon">Coming soon</span>
+            }
+          </div>
+          <p class="tagline">{{ project.tagline }}</p>
+          <p class="description">{{ project.description }}</p>
           <ul class="feature-list">
-            @for (feature of product.features; track feature) {
+            @for (feature of project.features; track feature) {
               <li>{{ feature }}</li>
             }
           </ul>
-          <a [href]="product.url" target="_blank" rel="noopener" class="btn btn-primary">
-            Visit {{ product.name }}
-          </a>
-        </article>
-      }
-    </div>
+          @if (project.status === 'live') {
+            <a [href]="project.url" target="_blank" rel="noopener" class="btn btn-primary">
+              Visit {{ project.name }}
+            </a>
+          } @else {
+            <a routerLink="/contact" [queryParams]="{ topic: betaTopic }" class="btn btn-primary">
+              Sign up for the beta
+            </a>
+          }
+        </div>
+      </article>
+    }
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container">
+    <h2>Need something like this for your business?</h2>
+    <p>I build custom tools the same way: start with the real problem and build what fixes it.</p>
+    <a routerLink="/contact" class="btn btn-primary">Tell me about your project</a>
   </div>
 </section>
