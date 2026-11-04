@@ -15,8 +15,29 @@ describe('validateContactPayload', () => {
         name: 'Jane Doe',
         email: 'jane@example.com',
         message: 'Hello there.',
+        kind: 'quick',
       });
     }
+  });
+
+  it('keeps a known kind', () => {
+    const result = validateContactPayload({
+      name: 'Jane Doe',
+      email: 'jane@example.com',
+      message: 'Hi',
+      kind: 'project',
+    });
+    expect(result.valid && result.data.kind).toBe('project');
+  });
+
+  it('falls back to quick for an unknown kind', () => {
+    const result = validateContactPayload({
+      name: 'Jane Doe',
+      email: 'jane@example.com',
+      message: 'Hi',
+      kind: 'something-else',
+    });
+    expect(result.valid && result.data.kind).toBe('quick');
   });
 
   it('rejects a missing name', () => {

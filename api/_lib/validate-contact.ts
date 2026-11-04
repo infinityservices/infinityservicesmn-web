@@ -1,7 +1,13 @@
+/** Which form on the site sent the message. Shown in the email subject. */
+export type ContactKind = 'quick' | 'project' | 'beta';
+
+const CONTACT_KINDS: readonly ContactKind[] = ['quick', 'project', 'beta'];
+
 export interface ContactPayload {
   name: string;
   email: string;
   message: string;
+  kind: ContactKind;
 }
 
 export interface RawContactBody {
@@ -9,6 +15,7 @@ export interface RawContactBody {
   email?: unknown;
   message?: unknown;
   website?: unknown;
+  kind?: unknown;
 }
 
 export type ValidationResult =
@@ -31,7 +38,7 @@ export function validateContactPayload(body: unknown): ValidationResult {
     return { valid: false, error: 'Request body must be a JSON object.' };
   }
 
-  const { name, email, message } = body as RawContactBody;
+  const { name, email, message, kind } = body as RawContactBody;
 
   if (typeof name !== 'string' || name.trim().length === 0) {
     return { valid: false, error: 'Name is required.' };
@@ -54,12 +61,18 @@ export function validateContactPayload(body: unknown): ValidationResult {
     return { valid: false, error: 'Message is too long.' };
   }
 
+  // Unknown or missing kinds fall back to a plain message rather than failing.
+  const safeKind: ContactKind = CONTACT_KINDS.includes(kind as ContactKind)
+    ? (kind as ContactKind)
+    : 'quick';
+
   return {
     valid: true,
     data: {
       name: name.trim().replace(/[\x00-\x1F\x7F]/g, ''),
       email: email.trim(),
       message: message.trim(),
+      kind: safeKind,
     },
   };
 }

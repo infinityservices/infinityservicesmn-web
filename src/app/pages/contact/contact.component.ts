@@ -2,13 +2,16 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { BETA_TOPIC } from '../../shared/projects';
+import { ProjectWizardComponent } from './project-wizard/project-wizard.component';
+import { sendContact } from './send-contact';
 
 type SubmitState = 'idle' | 'submitting' | 'success' | 'error';
+export type ContactMode = 'project' | 'quick';
 
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ProjectWizardComponent],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.scss',
 })
@@ -17,6 +20,8 @@ export class ContactComponent implements OnInit {
   readonly errorMessage = signal('');
 
   readonly isBetaSignup = signal(false);
+  /** The guided planner is the default; the quick form is one click away. */
+  readonly mode = signal<ContactMode>('project');
 
   private readonly fb = new FormBuilder();
   private readonly route = inject(ActivatedRoute);
@@ -29,8 +34,13 @@ export class ContactComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    if (this.route.snapshot.queryParamMap.get('topic') === BETA_TOPIC) {
+    const params = this.route.snapshot.queryParamMap;
+    if (params.get('mode') === 'quick') {
+      this.mode.set('quick');
+    }
+    if (params.get('topic') === BETA_TOPIC) {
       this.isBetaSignup.set(true);
+      this.mode.set('quick');
       this.form.controls.message.setValue(
         "I'd like to try the InfiniHerd beta. A bit about my operation: ",
       );
@@ -47,26 +57,15 @@ export class ContactComponent implements OnInit {
     this.errorMessage.set('');
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.form.getRawValue()),
+      await sendContact({
+        ...this.form.getRawValue(),
+        kind: this.isBetaSignup() ? 'beta' : 'quick',
       });
-
-      if (!response.ok) {
-        const body = await response.json().catch(() => ({ error: 'Something went wrong.' }));
-        throw new Error(body.error ?? 'Something went wrong.');
-      }
-
       this.state.set('success');
       this.form.reset();
     } catch (err) {
       this.state.set('error');
-      if (err instanceof TypeError) {
-        this.errorMessage.set('Network error — please check your connection and try again.');
-      } else {
-        this.errorMessage.set(err instanceof Error ? err.message : 'Something went wrong.');
-      }
+      this.errorMessage.set(err instanceof Error ? err.message : 'Something went wrong.');
     }
   }
 }
