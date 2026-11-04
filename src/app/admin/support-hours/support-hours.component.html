@@ -1,0 +1,106 @@
+<section class="card">
+  <div class="page-head" style="margin-bottom: 8px">
+    <h2 style="margin: 0">Time and support hours</h2>
+    <div class="month-nav">
+      <button type="button" class="a-btn ghost" (click)="shiftMonth(-1)" aria-label="Previous month">‹</button>
+      <strong>{{ month() | date: 'MMMM y' }}</strong>
+      <button type="button" class="a-btn ghost" (click)="shiftMonth(1)" [disabled]="isCurrentMonth()" aria-label="Next month">›</button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="error-box">{{ error() }}</div>
+  }
+
+  @if (client().support_tier !== 'none') {
+    <div class="usage">
+      <div class="usage-line">
+        <span>
+          <strong>{{ fmt(usage().used) }}</strong> of {{ fmt(usage().allowance) }} plan time used
+        </span>
+        @if (usage().overage > 0) {
+          <span class="badge red">{{ fmt(usage().overage) }} over · about {{ usage().overageCharge | currency: 'USD' }}</span>
+        } @else {
+          <span class="muted">{{ fmt(usage().remaining) }} left</span>
+        }
+      </div>
+      <div class="usage-bar" role="progressbar" [attr.aria-valuenow]="barPercent()" aria-valuemin="0" aria-valuemax="100">
+        <div class="usage-fill" [class]="'usage-fill ' + barClass()" [style.width.%]="barPercent()"></div>
+      </div>
+    </div>
+  } @else {
+    <p class="muted" style="margin-bottom: 12px">
+      No support plan. Time logged here is billed hourly or against a project.
+      @if (usage().used > 0) {
+        <span class="badge amber">{{ fmt(usage().used) }} logged as support</span>
+      }
+    </p>
+  }
+  @if (otherMinutes() > 0) {
+    <p class="muted" style="margin-bottom: 12px">Plus {{ fmt(otherMinutes()) }} of project and hourly work this month.</p>
+  }
+
+  <form (ngSubmit)="add()" class="form-grid time-form">
+    <div class="field">
+      <label for="t-date">Date</label>
+      <input id="t-date" name="work_date" type="date" required [(ngModel)]="draft.work_date" />
+    </div>
+    <div class="field">
+      <label for="t-duration">Time</label>
+      <input id="t-duration" name="duration" required placeholder="30, 1.5h, 1:15" [(ngModel)]="draft.duration" />
+    </div>
+    <div class="field">
+      <label for="t-category">Counts toward</label>
+      <select id="t-category" name="category" [(ngModel)]="draft.category">
+        @for (c of categories; track c.value) {
+          <option [value]="c.value">{{ c.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="t-project">Project (optional)</label>
+      <select id="t-project" name="project_id" [(ngModel)]="draft.project_id">
+        <option value="">None</option>
+        @for (p of projects(); track p.id) {
+          <option [value]="p.id">{{ p.title }}</option>
+        }
+      </select>
+    </div>
+    <div class="field full">
+      <label for="t-desc">What you did</label>
+      <input id="t-desc" name="description" required placeholder="e.g. Updated store hours and fixed the contact form" [(ngModel)]="draft.description" />
+    </div>
+    <div class="full">
+      <button type="submit" class="a-btn primary" [disabled]="busy() || !draft.duration.trim() || !draft.description.trim()">Log time</button>
+    </div>
+  </form>
+
+  @if (loading()) {
+    <p class="empty">Loading…</p>
+  } @else if (entries().length === 0) {
+    <p class="empty">No time logged in {{ month() | date: 'MMMM' }}.</p>
+  } @else {
+    <table class="a-table" style="margin-top: 12px">
+      <tbody>
+        @for (e of entries(); track e.id) {
+          <tr>
+            <td class="muted" style="white-space: nowrap">{{ e.work_date | date: 'MMM d' }}</td>
+            <td>
+              {{ e.description }}
+              <div class="muted">
+                {{ categoryLabel(e.category) }}
+                @if (projectTitle(e.project_id); as title) {
+                  · {{ title }}
+                }
+              </div>
+            </td>
+            <td class="num">{{ fmt(e.minutes) }}</td>
+            <td class="num">
+              <button type="button" class="a-btn ghost danger" (click)="remove(e)" [disabled]="busy()" [attr.aria-label]="'Delete entry: ' + e.description">✕</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>

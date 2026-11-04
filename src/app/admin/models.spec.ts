@@ -22,3 +22,53 @@ describe('admin billing helpers', () => {
     expect(monthlyAmount({ amount: null, billing_interval: 'month' })).toBe(0);
   });
 });
+
+import { formatMinutes, monthRange, parseDuration, planUsage } from './models';
+
+describe('support hours helpers', () => {
+  it('computes the calendar month range', () => {
+    expect(monthRange(new Date(2026, 1, 14))).toEqual({ start: '2026-02-01', end: '2026-02-28' });
+    expect(monthRange(new Date(2026, 11, 31))).toEqual({ start: '2026-12-01', end: '2026-12-31' });
+  });
+
+  it('counts only support entries against the plan allowance', () => {
+    const usage = planUsage(
+      [
+        { minutes: 60, category: 'support' },
+        { minutes: 45, category: 'support' },
+        { minutes: 300, category: 'project' },
+      ],
+      'standard',
+    );
+    expect(usage.used).toBe(105);
+    expect(usage.allowance).toBe(90);
+    expect(usage.overage).toBe(15);
+    expect(usage.remaining).toBe(0);
+    expect(usage.overageCharge).toBe(22.5); // 15 min at $90/hr
+  });
+
+  it('reports remaining time under the allowance', () => {
+    const usage = planUsage([{ minutes: 20, category: 'support' }], 'priority');
+    expect(usage.remaining).toBe(160);
+    expect(usage.overage).toBe(0);
+    expect(usage.ratio).toBeCloseTo(20 / 180);
+  });
+
+  it('formats minutes', () => {
+    expect(formatMinutes(30)).toBe('30 min');
+    expect(formatMinutes(120)).toBe('2 hr');
+    expect(formatMinutes(95)).toBe('1 hr 35 min');
+  });
+
+  it('parses durations', () => {
+    expect(parseDuration('90')).toBe(90);
+    expect(parseDuration('45m')).toBe(45);
+    expect(parseDuration('1:30')).toBe(90);
+    expect(parseDuration('1.5')).toBe(90);
+    expect(parseDuration('1.5h')).toBe(90);
+    expect(parseDuration('2 hours')).toBe(120);
+    expect(parseDuration('.25')).toBe(15);
+    expect(parseDuration('abc')).toBeNull();
+    expect(parseDuration('0')).toBeNull();
+  });
+});

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import type { PostgrestError } from '@supabase/supabase-js';
 import { supabase } from './supabase';
-import type { Activity, Client, Invoice, Lead, LeadStatus, Project, Subscription } from './models';
+import type { Activity, Client, Invoice, Lead, LeadStatus, Project, Subscription, TimeEntry } from './models';
 
 function unwrap<T>(result: { data: T | null; error: PostgrestError | null }): T {
   if (result.error) {
@@ -113,5 +113,24 @@ export class AdminDataService {
 
   async linkInvoice(id: string, clientId: string | null) {
     unwrap(await this.db.from('invoices').update({ client_id: clientId }).eq('id', id));
+  }
+
+  // Time entries
+  async timeEntries(filter: { clientId?: string; from: string; to: string }): Promise<TimeEntry[]> {
+    let query = this.db
+      .from('time_entries')
+      .select('*')
+      .gte('work_date', filter.from)
+      .lte('work_date', filter.to);
+    if (filter.clientId) query = query.eq('client_id', filter.clientId);
+    return unwrap(await query.order('work_date', { ascending: false }).order('created_at', { ascending: false }));
+  }
+
+  async addTimeEntry(values: Omit<TimeEntry, 'id' | 'created_at'>) {
+    unwrap(await this.db.from('time_entries').insert(values));
+  }
+
+  async deleteTimeEntry(id: string) {
+    unwrap(await this.db.from('time_entries').delete().eq('id', id));
   }
 }
