@@ -41,3 +41,4 @@ alter table public.leads enable row level security;
 -- explicitly. Only the server-side service role can touch leads for now; the
 -- signed-in admin role is granted alongside its RLS policy in the next step.
 grant select, insert, update, delete on public.leads to service_role;
+revoke all on public.leads from anon, authenticated;
