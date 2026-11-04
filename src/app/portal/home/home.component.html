@@ -1,0 +1,234 @@
+<div class="portal">
+  <header class="portal-top">
+    <a routerLink="/" class="portal-brand" aria-label="Infinity Services home">
+      <img src="brand/logo-on-dark.webp" alt="Infinity Services" width="88" height="40" />
+      <span>Client portal</span>
+    </a>
+    <div class="portal-user">
+      <span class="who">{{ email() }}</span>
+      <button type="button" class="p-btn ghost" (click)="signOut()">Sign out</button>
+    </div>
+  </header>
+
+  <main class="portal-main">
+    @if (loading()) {
+      <p class="empty">Loading your account…</p>
+    } @else if (error()) {
+      <div class="error-box" role="alert">{{ error() }}</div>
+    } @else if (!hasAccess()) {
+      <section class="card no-access">
+        <h1>You're signed in, but there's nothing here yet</h1>
+        <p>
+          <strong>{{ email() }}</strong> isn't connected to a client account. If you think it should be, email me at
+          <a [href]="'mailto:' + contactEmail">{{ contactEmail }}</a> and I'll get it sorted out.
+        </p>
+      </section>
+    } @else {
+      <section class="welcome">
+        <div>
+          <p class="eyebrow">{{ heading() }}</p>
+          <h1>Hi {{ firstName() }}, here's where things stand.</h1>
+        </div>
+        <a class="p-btn primary" [href]="requestLink()">Ask for help or request work</a>
+      </section>
+
+      <section class="summary" aria-label="Summary">
+        <div class="tile">
+          <div class="label">Projects in progress</div>
+          <div class="value">{{ activeCount() }}</div>
+          <div class="sub">{{ projects().open.length }} open in total</div>
+        </div>
+        <div class="tile" [class.warn]="overdueCount() > 0">
+          <div class="label">Amount due</div>
+          <div class="value">{{ amountDue() | currency: 'USD' }}</div>
+          <div class="sub">
+            @if (overdueCount() > 0) {
+              {{ overdueCount() }} past due
+            } @else if (unpaid().length) {
+              {{ unpaid().length }} open invoice{{ unpaid().length === 1 ? '' : 's' }}
+            } @else {
+              You're all paid up
+            }
+          </div>
+        </div>
+        <div class="tile">
+          <div class="label">Support plan</div>
+          @if (plans().length) {
+            <div class="value small">{{ plans()[0].plan_name || 'Support plan' }}</div>
+            <div class="sub">{{ plans()[0].amount | currency: 'USD' }}{{ perInterval(plans()[0].billing_interval) }}</div>
+          } @else if (tierOnFile(); as tier) {
+            <div class="value small">{{ tierText[tier] }}</div>
+            <div class="sub">On file</div>
+          } @else {
+            <div class="value small">None</div>
+            <div class="sub"><a routerLink="/services">See support options</a></div>
+          }
+        </div>
+      </section>
+
+      @if (unpaid().length) {
+        <section class="card due">
+          <h2>Ready to pay</h2>
+          <ul class="due-list">
+            @for (inv of unpaid(); track inv.id) {
+              <li>
+                <div>
+                  <strong>{{ inv.title || 'Invoice' }}</strong>
+                  @if (inv.invoice_number) {
+                    <span class="muted"> #{{ inv.invoice_number }}</span>
+                  }
+                  <div class="muted small">
+                    @if (inv.due_date) { Due {{ inv.due_date | date: 'mediumDate' }} }
+                    <span class="badge" [class]="'badge ' + invoiceStatus(inv).tone">{{ invoiceStatus(inv).label }}</span>
+                  </div>
+                </div>
+                <div class="due-pay">
+                  <span class="amount">{{ inv.amount | currency: 'USD' }}</span>
+                  @if (inv.public_url) {
+                    <a class="p-btn primary" [href]="inv.public_url" target="_blank" rel="noopener">Pay now</a>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+          <p class="muted small">Payments go through Square's secure checkout.</p>
+        </section>
+      }
+
+      <section class="card">
+        <h2>Projects</h2>
+        @if (!data().projects.length) {
+          <p class="empty">No projects yet. When we agree on work, it'll show up here.</p>
+        } @else {
+          @if (projects().open.length) {
+            <ul class="project-list">
+              @for (p of projects().open; track p.id) {
+                <li>
+                  <div class="project-main">
+                    <strong>{{ p.title }}</strong>
+                    <div class="muted small">{{ projectKind[p.kind] }}</div>
+                  </div>
+                  <div class="project-meta">
+                    <span class="badge" [class]="'badge ' + projectStatus[p.status].tone">{{ projectStatus[p.status].label }}</span>
+                    @if (p.due_date) {
+                      <span class="muted small">Target {{ p.due_date | date: 'mediumDate' }}</span>
+                    }
+                    @if (p.quoted_amount != null) {
+                      <span class="muted small">Quote {{ p.quoted_amount | currency: 'USD' }}</span>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="empty">Nothing in progress right now.</p>
+          }
+          @if (projects().closed.length) {
+            <button type="button" class="link-btn" (click)="showClosed.set(!showClosed())" [attr.aria-expanded]="showClosed()">
+              {{ showClosed() ? 'Hide' : 'Show' }} {{ projects().closed.length }} finished project{{ projects().closed.length === 1 ? '' : 's' }}
+            </button>
+            @if (showClosed()) {
+              <ul class="project-list closed">
+                @for (p of projects().closed; track p.id) {
+                  <li>
+                    <div class="project-main">
+                      <strong>{{ p.title }}</strong>
+                      <div class="muted small">{{ projectKind[p.kind] }}</div>
+                    </div>
+                    <div class="project-meta">
+                      <span class="badge" [class]="'badge ' + projectStatus[p.status].tone">{{ projectStatus[p.status].label }}</span>
+                      <span class="muted small">Updated {{ p.updated_at | date: 'mediumDate' }}</span>
+                    </div>
+                  </li>
+                }
+              </ul>
+            }
+          }
+        }
+      </section>
+
+      <section class="card">
+        <h2>Invoices</h2>
+        @if (!data().invoices.length) {
+          <p class="empty">No invoices yet.</p>
+        } @else {
+          <div class="table-wrap">
+            <table class="p-table">
+              <thead>
+                <tr>
+                  <th>Invoice</th>
+                  <th>Status</th>
+                  <th>Due</th>
+                  <th class="num">Amount</th>
+                  <th><span class="sr-only">Link</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (inv of data().invoices; track inv.id) {
+                  <tr>
+                    <td>
+                      <strong>{{ inv.title || 'Invoice' }}</strong>
+                      @if (inv.invoice_number) {
+                        <span class="muted"> #{{ inv.invoice_number }}</span>
+                      }
+                      @if (projectTitle(inv.project_id); as pt) {
+                        <div class="muted small">{{ pt }}</div>
+                      }
+                    </td>
+                    <td><span class="badge" [class]="'badge ' + invoiceStatus(inv).tone">{{ invoiceStatus(inv).label }}</span></td>
+                    <td>
+                      @if (inv.paid_at) {
+                        <span class="muted">Paid {{ inv.paid_at | date: 'mediumDate' }}</span>
+                      } @else if (inv.due_date) {
+                        {{ inv.due_date | date: 'mediumDate' }}
+                      } @else {
+                        <span class="muted">—</span>
+                      }
+                    </td>
+                    <td class="num">{{ inv.amount | currency: 'USD' }}</td>
+                    <td class="num">
+                      @if (inv.public_url) {
+                        <a [href]="inv.public_url" target="_blank" rel="noopener">View</a>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      @if (plans().length) {
+        <section class="card">
+          <h2>Support plan</h2>
+          @for (s of plans(); track s.id) {
+            <div class="plan">
+              <div>
+                <strong>{{ s.plan_name || 'Support plan' }}</strong>
+                <div class="muted small">{{ s.amount | currency: 'USD' }}{{ perInterval(s.billing_interval) }}, billed through Stripe</div>
+              </div>
+              <div class="project-meta">
+                <span class="badge" [class]="'badge ' + subscriptionStatus(s).tone">{{ subscriptionStatus(s).label }}</span>
+                @if (s.current_period_end) {
+                  <span class="muted small">
+                    {{ s.cancel_at_period_end ? 'Ends' : 'Renews' }} {{ s.current_period_end | date: 'mediumDate' }}
+                  </span>
+                }
+              </div>
+            </div>
+          }
+          <p class="muted small">To change your plan or the card on file, just <a [href]="requestLink()">email me</a>.</p>
+        </section>
+      }
+
+      <section class="card help">
+        <h2>Need something?</h2>
+        <p>
+          Something broken, a change you'd like, or a question about an invoice? Email me at
+          <a [href]="requestLink()">{{ contactEmail }}</a> and I'll get back to you.
+        </p>
+      </section>
+    }
+  </main>
+</div>

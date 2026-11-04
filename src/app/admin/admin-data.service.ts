@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import type { PostgrestError } from '@supabase/supabase-js';
 import { supabase } from './supabase';
-import type { Activity, Client, Invoice, Lead, LeadStatus, Project, Subscription } from './models';
+import type { Activity, Client, Invoice, Lead, LeadStatus, PortalMember, Project, Subscription } from './models';
 
 function unwrap<T>(result: { data: T | null; error: PostgrestError | null }): T {
   if (result.error) {
@@ -113,5 +113,37 @@ export class AdminDataService {
 
   async linkInvoice(id: string, clientId: string | null) {
     unwrap(await this.db.from('invoices').update({ client_id: clientId }).eq('id', id));
+  }
+
+  // Client portal access
+  async portalMembers(clientId: string): Promise<PortalMember[]> {
+    return unwrap(
+      await this.db.from('portal_members').select('*').eq('client_id', clientId).order('created_at'),
+    );
+  }
+
+  async removePortalMember(id: string) {
+    unwrap(await this.db.from('portal_members').delete().eq('id', id));
+  }
+
+  /**
+   * Gives an email portal access to a client and emails them a sign-in link.
+   * Runs server-side because creating logins needs the secret key.
+   */
+  async invitePortalMember(clientId: string, email: string): Promise<'invited' | 'login_link_sent'> {
+    const { data } = await this.db.auth.getSession();
+    const response = await fetch('/api/portal-invite', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${data.session?.access_token ?? ''}`,
+      },
+      body: JSON.stringify({ clientId, email }),
+    });
+    const body = (await response.json().catch(() => ({}))) as { outcome?: string; error?: string };
+    if (!response.ok) {
+      throw new Error(body.error ?? `Invite failed (${response.status}).`);
+    }
+    return body.outcome === 'login_link_sent' ? 'login_link_sent' : 'invited';
   }
 }

@@ -181,8 +181,10 @@ table.a-table {
 .admin textarea { min-height: 80px; resize: vertical; }
 
 .note-form { grid-template-columns: 160px 1fr auto; align-items: end; }
+.note-form.portal-form { grid-template-columns: 1fr auto; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 .empty { color: var(--color-text-secondary); padding: 16px 0; }
+.ok-box { background: #dcf3e6; color: #1d6b3f; padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 12px; }
 .error-box { background: #fde2e1; color: #a21c1c; padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 16px; }
 .pre { white-space: pre-wrap; }
 

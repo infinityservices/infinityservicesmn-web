@@ -58,6 +58,22 @@ A private admin area for leads, clients, projects and billing, lazy-loaded so pu
 - Square invoices attach to the client with the same Square customer ID, or else the one client with the same email (which then records the ID). Unmatched invoices show under Billing → "Not linked to a client".
 - Stripe subscriptions are saved only for customers linked to a client, so InfiniTrack/InfiniHerd subscriptions on the same Stripe account are ignored. A new Stripe customer whose email matches a client is linked automatically; otherwise paste the `cus_…` ID on the client page.
 
+## Client portal (`/portal`)
+
+Clients sign in with a magic link (no password) and see their own projects, invoices (drafts hidden) and support plan, with Square "Pay now" links. They never see notes, hosting notes, the activity log or other clients. Lazy-loaded like `/admin`.
+
+**How access works.** `public.portal_members` lists which emails can see which client. Clients can't read any table directly; the page calls `portal_overview()`, a database function that returns only client-safe columns for the clients the signed-in email belongs to. Checks live in `supabase/tests/portal_access.sql`.
+
+**Giving a client access.** On the client's admin page, use **Client portal → Give portal access**. `/api/portal-invite` (admin only) records the email and sends Supabase's invite email, or a sign-in link if that email already has a login. Remove someone and they lose access immediately.
+
+**One-time setup in Supabase** (Authentication settings):
+
+1. **Emails → SMTP settings:** turn on custom SMTP (e.g. Resend: host `smtp.resend.com`, port 465, user `resend`, password = a Resend API key, sender on the verified domain). Supabase's built-in mailer only delivers to the project's team members and a few emails an hour, so clients won't get links without this.
+2. **URL configuration → Redirect URLs:** add `https://infinityservicesmn.com/portal`, `https://www.infinityservicesmn.com/portal`, your Vercel preview domain with `/portal` (e.g. `https://*.vercel.app/portal`, to test previews) and `http://localhost:4200/portal`.
+3. **Email templates:** optionally reword "Invite user" and "Magic link" to mention Infinity Services.
+
+Sign-ups stay off: the portal never creates logins, only `/api/portal-invite` does.
+
 ## Deployment
 
 `vercel.json` builds this app (`framework: angular`,

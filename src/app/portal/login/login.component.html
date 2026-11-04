@@ -1,0 +1,31 @@
+<div class="portal-login">
+  <div class="login-card">
+    <a routerLink="/" class="login-logo"><img src="brand/logo.webp" alt="Infinity Services" width="180" height="83" /></a>
+
+    @if (sentTo()) {
+      <h1>Check your email</h1>
+      <p class="lead">
+        If <strong>{{ sentTo() }}</strong> has a client portal account, a sign-in link is on its way.
+        Click the link in that email to sign in. It works once and expires in an hour.
+      </p>
+      <p class="small">Nothing after a few minutes? Check your spam folder, or <button type="button" class="link-btn" (click)="reset()">try a different email</button>.</p>
+    } @else {
+      <h1>Client portal</h1>
+      <p class="lead">See your projects, invoices and support plan. Enter your email and I'll send you a sign-in link. No password needed.</p>
+      @if (expired()) {
+        <p class="notice" role="status">That sign-in link has expired or was already used. Enter your email for a new one.</p>
+      }
+      @if (error()) {
+        <p class="login-error" role="alert">{{ error() }}</p>
+      }
+      <form (ngSubmit)="sendLink()">
+        <label for="portal-email">Email</label>
+        <input id="portal-email" name="email" type="email" autocomplete="email" required [(ngModel)]="email" placeholder="you@yourbusiness.com" />
+        <button type="submit" class="btn btn-primary" [disabled]="busy() || !email.trim()">
+          {{ busy() ? 'Sending…' : 'Email me a sign-in link' }}
+        </button>
+      </form>
+      <p class="small">Not a client yet? <a routerLink="/contact">Get in touch</a>.</p>
+    }
+  </div>
+</div>

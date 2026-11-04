@@ -88,6 +88,14 @@ export interface Subscription {
   clients?: { name: string } | null;
 }
 
+export interface PortalMember {
+  id: string;
+  created_at: string;
+  client_id: string;
+  email: string;
+  invited_at: string | null;
+}
+
 export const LEAD_STATUSES: { value: LeadStatus; label: string }[] = [
   { value: 'new', label: 'New' },
   { value: 'contacted', label: 'Contacted' },

@@ -203,6 +203,44 @@
   </div>
 
   <section class="card">
+    <h2>Client portal</h2>
+    <p class="muted" style="margin-bottom: 12px">
+      People listed here can sign in at <a href="/portal" target="_blank" rel="noopener">/portal</a> with a magic link
+      and see this client's projects, invoices (not drafts) and support plan. They never see notes, hosting notes or activity.
+    </p>
+    @if (portalMessage()) {
+      <p class="ok-box" role="status">{{ portalMessage() }}</p>
+    }
+    @if (portalMembers().length) {
+      <table class="a-table" style="margin-bottom: 12px">
+        <tbody>
+          @for (m of portalMembers(); track m.id) {
+            <tr>
+              <td>{{ m.email }}</td>
+              <td class="muted">
+                @if (m.invited_at) {
+                  Invited {{ m.invited_at | date: 'MMM d, y' }}
+                }
+              </td>
+              <td class="num">
+                <button type="button" class="a-btn ghost" (click)="invite(m.email)" [disabled]="busy()">Resend link</button>
+                <button type="button" class="a-btn ghost danger" (click)="removePortalMember(m)" [disabled]="busy()">Remove</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+    <form (ngSubmit)="invite(portalEmail)" class="form-grid note-form portal-form">
+      <div class="field">
+        <label for="portal-email">Email to invite</label>
+        <input id="portal-email" name="portal_email" type="email" [(ngModel)]="portalEmail" placeholder="owner@theirbusiness.com" />
+      </div>
+      <button type="submit" class="a-btn primary" [disabled]="busy() || !portalEmail.trim()">Give portal access</button>
+    </form>
+  </section>
+
+  <section class="card">
     <h2>Activity</h2>
     <form (ngSubmit)="addNote()" class="form-grid note-form">
       <div class="field">

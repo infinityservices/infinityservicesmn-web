@@ -10,6 +10,7 @@ import {
   Invoice,
   PROJECT_KINDS,
   PROJECT_STATUSES,
+  PortalMember,
   Project,
   ProjectKind,
   ProjectStatus,
@@ -40,6 +41,8 @@ export class ClientDetailComponent implements OnInit {
   readonly subscriptions = signal<Subscription[]>([]);
   readonly activity = signal<Activity[]>([]);
   readonly showProjectForm = signal(false);
+  readonly portalMembers = signal<PortalMember[]>([]);
+  readonly portalMessage = signal('');
 
   readonly tiers = SUPPORT_TIERS;
   readonly projectKinds = PROJECT_KINDS;
@@ -49,6 +52,7 @@ export class ClientDetailComponent implements OnInit {
   form: Partial<Client> = {};
   projectDraft = this.emptyProject();
   note = { kind: 'note' as ActivityKind, body: '' };
+  portalEmail = '';
 
   private get id(): string {
     return this.route.snapshot.paramMap.get('id') ?? '';
@@ -64,13 +68,16 @@ export class ClientDetailComponent implements OnInit {
 
   async ngOnInit() {
     try {
-      const [client, projects, invoices, subscriptions, activity] = await Promise.all([
+      const [client, projects, invoices, subscriptions, activity, members] = await Promise.all([
         this.data.client(this.id),
         this.data.projects(this.id),
         this.data.invoices(this.id),
         this.data.subscriptions(this.id),
         this.data.activity({ clientId: this.id }),
+        this.data.portalMembers(this.id),
       ]);
+      this.portalMembers.set(members);
+      if (!members.length) this.portalEmail = client.email ?? '';
       this.client.set(client);
       this.form = { ...client };
       this.projects.set(projects);
@@ -151,6 +158,43 @@ export class ClientDetailComponent implements OnInit {
       await this.data.addActivity({ client_id: this.id, kind: this.note.kind, body });
       this.note = { kind: 'note', body: '' };
       this.activity.set(await this.data.activity({ clientId: this.id }));
+    });
+  }
+
+  async invite(email: string) {
+    const address = email.trim().toLowerCase();
+    if (!address) return;
+    this.portalMessage.set('');
+    await this.run(async () => {
+      const outcome = await this.data.invitePortalMember(this.id, address);
+      this.portalMessage.set(
+        outcome === 'invited'
+          ? `Invite sent to ${address}.`
+          : `${address} already had a login, so I sent them a sign-in link.`,
+      );
+      await this.data.addActivity({
+        client_id: this.id,
+        kind: 'email',
+        body: `Sent client portal ${outcome === 'invited' ? 'invite' : 'sign-in link'} to ${address}.`,
+      });
+      this.portalEmail = '';
+      const [members, activity] = await Promise.all([
+        this.data.portalMembers(this.id),
+        this.data.activity({ clientId: this.id }),
+      ]);
+      this.portalMembers.set(members);
+      this.activity.set(activity);
+    });
+  }
+
+  async removePortalMember(member: PortalMember) {
+    if (!confirm(`Remove portal access for ${member.email}? They won't see this client's account anymore.`)) {
+      return;
+    }
+    this.portalMessage.set('');
+    await this.run(async () => {
+      await this.data.removePortalMember(member.id);
+      this.portalMembers.update((list) => list.filter((m) => m.id !== member.id));
     });
   }
 
