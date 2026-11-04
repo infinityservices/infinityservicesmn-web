@@ -16,6 +16,22 @@ export function getSupabaseConfig(env: NodeJS.ProcessEnv = process.env): Supabas
 }
 
 /**
+ * New-style secret keys (sb_secret_...) go only in the apikey header; legacy
+ * service_role JWTs also need to be sent as the bearer token.
+ */
+export function authHeaders(key: string): Record<string, string> {
+  const headers: Record<string, string> = {
+    apikey: key,
+    'Content-Type': 'application/json',
+    Prefer: 'return=minimal',
+  };
+  if (key.startsWith('eyJ')) {
+    headers['Authorization'] = `Bearer ${key}`;
+  }
+  return headers;
+}
+
+/**
  * Inserts a contact submission into the leads table through Supabase's REST API.
  * Throws on any failure so the caller can decide how to handle it.
  */
@@ -26,12 +42,7 @@ export async function saveLead(
 ): Promise<void> {
   const response = await fetchImpl(`${config.url}/rest/v1/leads`, {
     method: 'POST',
-    headers: {
-      apikey: config.serviceRoleKey,
-      Authorization: `Bearer ${config.serviceRoleKey}`,
-      'Content-Type': 'application/json',
-      Prefer: 'return=minimal',
-    },
+    headers: authHeaders(config.serviceRoleKey),
     body: JSON.stringify({
       kind: lead.kind,
       name: lead.name,

@@ -32,8 +32,14 @@ describe('saveLead', () => {
     expect(url).toBe('https://abc.supabase.co/rest/v1/leads');
     expect(init.method).toBe('POST');
     expect(init.headers.apikey).toBe('service-key');
-    expect(init.headers.Authorization).toBe('Bearer service-key');
+    expect(init.headers.Authorization).toBeUndefined();
     expect(JSON.parse(init.body)).toEqual(lead);
+  });
+
+  it('also sends a legacy service_role JWT as the bearer token', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 201 }));
+    await saveLead(lead, { ...config, serviceRoleKey: 'eyJhbGciOi.legacy' }, fetchMock);
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe('Bearer eyJhbGciOi.legacy');
   });
 
   it('throws when Supabase rejects the insert', async () => {
