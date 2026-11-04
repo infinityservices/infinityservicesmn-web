@@ -3,6 +3,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminDataService } from '../admin-data.service';
+import { SupportHoursComponent } from '../support-hours/support-hours.component';
 import {
   Activity,
   ActivityKind,
@@ -23,7 +24,7 @@ import {
 @Component({
   selector: 'app-admin-client-detail',
   standalone: true,
-  imports: [FormsModule, RouterLink, DatePipe, CurrencyPipe],
+  imports: [FormsModule, RouterLink, DatePipe, CurrencyPipe, SupportHoursComponent],
   templateUrl: './client-detail.component.html',
 })
 export class ClientDetailComponent implements OnInit {

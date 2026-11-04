@@ -86,4 +86,37 @@
       }
     </section>
   </div>
+
+  <section class="card">
+    <h2>Support hours this month</h2>
+    @if (supportUsage().length === 0) {
+      <p class="empty">No clients on a support plan yet. Set a plan on a client's page to track their hours here.</p>
+    } @else {
+      <table class="a-table">
+        <tbody>
+          @for (row of supportUsage(); track row.client.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/admin/clients', row.client.id]">{{ row.client.business || row.client.name }}</a>
+              </td>
+              <td style="width: 45%">
+                <div class="usage-bar">
+                  <div
+                    [class]="'usage-fill ' + (row.usage.ratio > 1 ? 'over' : row.usage.ratio >= 0.8 ? 'near' : '')"
+                    [style.width.%]="row.usage.ratio * 100 > 100 ? 100 : row.usage.ratio * 100"
+                  ></div>
+                </div>
+              </td>
+              <td class="num">
+                {{ fmt(row.usage.used) }} / {{ fmt(row.usage.allowance) }}
+                @if (row.usage.overage > 0) {
+                  <span class="badge red">Over</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
 }
