@@ -44,7 +44,7 @@ export class HomeComponent {
     },
     {
       title: 'I build',
-      text: 'I start with the smallest useful piece and show you early. I use modern AI tools to speed up the routine parts, which keeps costs down, and I review and test everything myself.',
+      text: 'I design the system using 20+ years of experience, then use AI tools to speed up the routine work. That keeps costs down, and every piece is reviewed and tested by me before you see it.',
     },
     {
       title: 'I stick around',
