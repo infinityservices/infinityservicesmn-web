@@ -1,0 +1,99 @@
+<div class="page-head">
+  <h1>Leads</h1>
+</div>
+
+@if (error()) {
+  <div class="error-box">{{ error() }}</div>
+}
+
+<div class="filters" role="group" aria-label="Filter leads">
+  @for (f of filters; track f.value) {
+    <button type="button" class="chip-btn" [class.on]="filter() === f.value" (click)="filter.set(f.value)">
+      {{ f.label }} ({{ count(f.value) }})
+    </button>
+  }
+</div>
+
+<section class="card">
+  @if (loading()) {
+    <p class="empty">Loading…</p>
+  } @else if (visible().length === 0) {
+    <p class="empty">No leads here yet. Submissions from the contact page land in this list.</p>
+  } @else {
+    <div class="table-wrap">
+      <table class="a-table">
+        <thead>
+          <tr>
+            <th>Received</th>
+            <th>Name</th>
+            <th>From</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (lead of visible(); track lead.id) {
+            <tr class="clickable" (click)="toggle(lead)" [attr.aria-expanded]="openId() === lead.id">
+              <td class="muted">{{ lead.created_at | date: 'MMM d, h:mm a' }}</td>
+              <td>
+                <strong>{{ lead.name }}</strong>
+                <div class="muted">{{ lead.email }}</div>
+              </td>
+              <td>{{ kindLabels[lead.kind] }}</td>
+              <td><span class="badge" [class]="'badge ' + badgeClass(lead.status)">{{ statusLabel(lead.status) }}</span></td>
+            </tr>
+            @if (openId() === lead.id) {
+              <tr>
+                <td colspan="4">
+                  <div class="grid-2">
+                    <div>
+                      <h2>Message</h2>
+                      <p class="pre">{{ lead.message }}</p>
+                      <div class="actions">
+                        <a class="a-btn" [href]="'mailto:' + lead.email">Reply by email</a>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="field">
+                        <label [for]="'status-' + lead.id">Status</label>
+                        <select
+                          [id]="'status-' + lead.id"
+                          [ngModel]="lead.status"
+                          (ngModelChange)="setStatus(lead, $event)"
+                          [disabled]="busyId() === lead.id"
+                        >
+                          @for (s of statuses; track s.value) {
+                            <option [value]="s.value">{{ s.label }}</option>
+                          }
+                        </select>
+                      </div>
+                      <div class="field" style="margin-top: 12px">
+                        <label [for]="'notes-' + lead.id">Notes</label>
+                        <textarea
+                          [id]="'notes-' + lead.id"
+                          [ngModel]="notesDraft()"
+                          (ngModelChange)="notesDraft.set($event)"
+                        ></textarea>
+                      </div>
+                      <div class="actions">
+                        <button type="button" class="a-btn" (click)="saveNotes(lead)" [disabled]="busyId() === lead.id">
+                          Save notes
+                        </button>
+                        @if (lead.client_id) {
+                          <a class="a-btn primary" [routerLink]="['/admin/clients', lead.client_id]">Open client</a>
+                        } @else {
+                          <button type="button" class="a-btn primary" (click)="convert(lead)" [disabled]="busyId() === lead.id">
+                            Convert to client
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

@@ -32,5 +32,10 @@ export const routes: Routes = [
     title: 'Legal | Infinity Services',
     loadComponent: () => import('./pages/legal/legal.component').then((m) => m.LegalComponent),
   },
+  {
+    // Private business admin. Lazy-loaded, so public visitors never download it.
+    path: 'admin',
+    loadChildren: () => import('./admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+  },
   { path: '**', redirectTo: '' },
 ];

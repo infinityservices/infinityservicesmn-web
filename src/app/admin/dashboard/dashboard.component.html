@@ -1,0 +1,89 @@
+<div class="page-head">
+  <h1>Dashboard</h1>
+</div>
+
+@if (error()) {
+  <div class="error-box">{{ error() }}</div>
+}
+
+@if (!loading()) {
+  <div class="stats">
+    <a class="stat" routerLink="/admin/leads">
+      <div class="label">New leads</div>
+      <div class="value">{{ newLeads().length }}</div>
+      <div class="sub">{{ leads().length }} total</div>
+    </a>
+    <a class="stat" routerLink="/admin/projects" [class.warn]="activeProjects().length > jobLimit">
+      <div class="label">Active jobs</div>
+      <div class="value">{{ activeProjects().length }} / {{ jobLimit }}</div>
+      <div class="sub">
+        @if (activeProjects().length >= jobLimit) {
+          At capacity
+        } @else {
+          Room for {{ jobLimit - activeProjects().length }} more
+        }
+      </div>
+    </a>
+    <a class="stat" routerLink="/admin/billing" [class.warn]="overdueCount() > 0">
+      <div class="label">Unpaid invoices</div>
+      <div class="value">{{ unpaidTotal() | currency: 'USD' : 'symbol' : '1.0-0' }}</div>
+      <div class="sub">{{ unpaid().length }} open, {{ overdueCount() }} overdue</div>
+    </a>
+    <a class="stat" routerLink="/admin/billing">
+      <div class="label">Support plans</div>
+      <div class="value">{{ monthlySupport() | currency: 'USD' : 'symbol' : '1.0-0' }}</div>
+      <div class="sub">per month, {{ activeSubs().length }} active</div>
+    </a>
+  </div>
+
+  <div class="grid-2">
+    <section class="card">
+      <h2>New leads</h2>
+      @if (newLeads().length === 0) {
+        <p class="empty">No new leads. Submissions from the contact page show up here.</p>
+      } @else {
+        <table class="a-table">
+          <tbody>
+            @for (lead of newLeads().slice(0, 6); track lead.id) {
+              <tr>
+                <td>
+                  <a routerLink="/admin/leads" [queryParams]="{ open: lead.id }">{{ lead.name }}</a>
+                  <div class="muted">{{ kindLabels[lead.kind] }}</div>
+                </td>
+                <td class="num muted">{{ lead.created_at | date: 'MMM d' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+
+    <section class="card">
+      <h2>Active jobs</h2>
+      @if (activeProjects().length === 0) {
+        <p class="empty">No active jobs.</p>
+      } @else {
+        <table class="a-table">
+          <tbody>
+            @for (project of activeProjects(); track project.id) {
+              <tr>
+                <td>
+                  <a [routerLink]="['/admin/clients', project.client_id]">{{ project.title }}</a>
+                  <div class="muted">{{ project.clients?.business || project.clients?.name }}</div>
+                </td>
+                <td class="num">
+                  @if (project.status === 'waiting') {
+                    <span class="badge amber">Waiting</span>
+                  }
+                  @if (project.due_date) {
+                    <div class="muted">Due {{ project.due_date | date: 'MMM d' }}</div>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  </div>
+}

@@ -1,0 +1,95 @@
+<div class="page-head">
+  <h1>Clients</h1>
+  <button type="button" class="a-btn primary" (click)="showForm.set(!showForm())">
+    {{ showForm() ? 'Cancel' : 'New client' }}
+  </button>
+</div>
+
+@if (error()) {
+  <div class="error-box">{{ error() }}</div>
+}
+
+@if (showForm()) {
+  <form class="card" (ngSubmit)="create()">
+    <h2>New client</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label for="c-name">Name *</label>
+        <input id="c-name" name="name" required [(ngModel)]="draft.name" />
+      </div>
+      <div class="field">
+        <label for="c-business">Business</label>
+        <input id="c-business" name="business" [(ngModel)]="draft.business" />
+      </div>
+      <div class="field">
+        <label for="c-email">Email</label>
+        <input id="c-email" name="email" type="email" [(ngModel)]="draft.email" />
+      </div>
+      <div class="field">
+        <label for="c-phone">Phone</label>
+        <input id="c-phone" name="phone" [(ngModel)]="draft.phone" />
+      </div>
+    </div>
+    <div class="actions">
+      <button type="submit" class="a-btn primary" [disabled]="saving() || !draft.name.trim()">Create client</button>
+    </div>
+  </form>
+}
+
+<section class="card">
+  <div class="field" style="max-width: 320px; margin-bottom: 12px">
+    <label for="c-search">Search</label>
+    <input id="c-search" type="search" placeholder="Name, business or email" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+  </div>
+  @if (loading()) {
+    <p class="empty">Loading…</p>
+  } @else if (visible().length === 0) {
+    <p class="empty">No clients yet. Convert a lead or add one with “New client”.</p>
+  } @else {
+    <div class="table-wrap">
+      <table class="a-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Contact</th>
+            <th>Support plan</th>
+            <th>Billing links</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (client of visible(); track client.id) {
+            <tr class="clickable" [routerLink]="['/admin/clients', client.id]">
+              <td>
+                <a [routerLink]="['/admin/clients', client.id]"><strong>{{ client.name }}</strong></a>
+                @if (client.business) {
+                  <div class="muted">{{ client.business }}</div>
+                }
+              </td>
+              <td>
+                {{ client.email }}
+                @if (client.phone) {
+                  <div class="muted">{{ client.phone }}</div>
+                }
+              </td>
+              <td>
+                @if (client.support_tier !== 'none') {
+                  <span class="badge blue">{{ tierLabel(client.support_tier) }}</span>
+                } @else {
+                  <span class="muted">None</span>
+                }
+              </td>
+              <td class="muted">
+                {{ client.square_customer_id ? 'Square' : '' }}
+                {{ client.square_customer_id && client.stripe_customer_id ? '·' : '' }}
+                {{ client.stripe_customer_id ? 'Stripe' : '' }}
+                @if (!client.square_customer_id && !client.stripe_customer_id) {
+                  Not linked
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

@@ -1,0 +1,29 @@
+<div class="admin">
+  <header class="admin-top">
+    <a routerLink="/admin" class="admin-brand">
+      <img src="brand/logo-on-dark.webp" alt="Infinity Services" width="88" height="40" />
+      <span>Business admin</span>
+    </a>
+    <button type="button" class="admin-menu-btn" (click)="menuOpen.set(!menuOpen())" [attr.aria-expanded]="menuOpen()">
+      Menu
+    </button>
+    <nav class="admin-nav" [class.open]="menuOpen()" aria-label="Admin">
+      @for (item of nav; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.exact }"
+          (click)="menuOpen.set(false)"
+          >{{ item.label }}</a
+        >
+      }
+    </nav>
+    <div class="admin-user">
+      <span class="muted">{{ email() }}</span>
+      <button type="button" class="a-btn ghost" (click)="signOut()">Sign out</button>
+    </div>
+  </header>
+  <main class="admin-main">
+    <router-outlet />
+  </main>
+</div>

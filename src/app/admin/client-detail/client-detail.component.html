@@ -1,0 +1,235 @@
+<p><a routerLink="/admin/clients">← All clients</a></p>
+
+@if (error()) {
+  <div class="error-box">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <p class="empty">Loading…</p>
+} @else if (client(); as c) {
+  <div class="page-head">
+    <div>
+      <h1>{{ c.name }}</h1>
+      @if (c.business) {
+        <div class="muted">{{ c.business }}</div>
+      }
+    </div>
+    <div class="actions" style="margin: 0">
+      @if (c.email) {
+        <a class="a-btn" [href]="'mailto:' + c.email">Email</a>
+      }
+      <button type="button" class="a-btn danger" (click)="remove()" [disabled]="busy()">Delete</button>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <form class="card" (ngSubmit)="save()">
+      <h2>Details</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="f-name">Name</label>
+          <input id="f-name" name="name" [(ngModel)]="form.name" />
+        </div>
+        <div class="field">
+          <label for="f-business">Business</label>
+          <input id="f-business" name="business" [(ngModel)]="form.business" />
+        </div>
+        <div class="field">
+          <label for="f-email">Email</label>
+          <input id="f-email" name="email" type="email" [(ngModel)]="form.email" />
+        </div>
+        <div class="field">
+          <label for="f-phone">Phone</label>
+          <input id="f-phone" name="phone" [(ngModel)]="form.phone" />
+        </div>
+        <div class="field">
+          <label for="f-website">Website</label>
+          <input id="f-website" name="website" [(ngModel)]="form.website" />
+        </div>
+        <div class="field">
+          <label for="f-tier">Support plan</label>
+          <select id="f-tier" name="support_tier" [(ngModel)]="form.support_tier">
+            @for (t of tiers; track t.value) {
+              <option [value]="t.value">{{ t.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="field full">
+          <label for="f-hosting">Hosting and access notes</label>
+          <textarea id="f-hosting" name="hosting_notes" [(ngModel)]="form.hosting_notes" placeholder="Where it's hosted, who owns the account. Not passwords."></textarea>
+        </div>
+        <div class="field full">
+          <label for="f-notes">Notes</label>
+          <textarea id="f-notes" name="notes" [(ngModel)]="form.notes"></textarea>
+        </div>
+        <div class="field">
+          <label for="f-square">Square customer ID</label>
+          <input id="f-square" name="square_customer_id" [(ngModel)]="form.square_customer_id" placeholder="Linked automatically by email" />
+        </div>
+        <div class="field">
+          <label for="f-stripe">Stripe customer ID</label>
+          <input id="f-stripe" name="stripe_customer_id" [(ngModel)]="form.stripe_customer_id" placeholder="cus_…" />
+        </div>
+      </div>
+      <div class="actions">
+        <button type="submit" class="a-btn primary" [disabled]="busy()">Save details</button>
+        @if (saved()) {
+          <span class="muted" role="status">Saved</span>
+        }
+      </div>
+    </form>
+
+    <div>
+      <section class="card">
+        <div class="page-head" style="margin-bottom: 8px">
+          <h2 style="margin: 0">Projects</h2>
+          <button type="button" class="a-btn" (click)="showProjectForm.set(!showProjectForm())">
+            {{ showProjectForm() ? 'Cancel' : 'Add project' }}
+          </button>
+        </div>
+        @if (showProjectForm()) {
+          <form (ngSubmit)="addProject()" style="margin-bottom: 16px">
+            <div class="form-grid">
+              <div class="field full">
+                <label for="p-title">Title *</label>
+                <input id="p-title" name="title" required [(ngModel)]="projectDraft.title" />
+              </div>
+              <div class="field">
+                <label for="p-kind">Type</label>
+                <select id="p-kind" name="kind" [(ngModel)]="projectDraft.kind">
+                  @for (k of projectKinds; track k.value) {
+                    <option [value]="k.value">{{ k.label }}</option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label for="p-status">Status</label>
+                <select id="p-status" name="status" [(ngModel)]="projectDraft.status">
+                  @for (s of projectStatuses; track s.value) {
+                    <option [value]="s.value">{{ s.label }}</option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label for="p-amount">Quoted amount ($)</label>
+                <input id="p-amount" name="quoted_amount" type="number" min="0" step="1" [(ngModel)]="projectDraft.quoted_amount" />
+              </div>
+              <div class="field">
+                <label for="p-due">Due date</label>
+                <input id="p-due" name="due_date" type="date" [(ngModel)]="projectDraft.due_date" />
+              </div>
+            </div>
+            <div class="actions">
+              <button type="submit" class="a-btn primary" [disabled]="busy() || !projectDraft.title.trim()">Add project</button>
+            </div>
+          </form>
+        }
+        @if (projects().length === 0) {
+          <p class="empty">No projects yet.</p>
+        } @else {
+          <table class="a-table">
+            <tbody>
+              @for (p of projects(); track p.id) {
+                <tr>
+                  <td>
+                    <strong>{{ p.title }}</strong>
+                    <div class="muted">
+                      {{ kindLabel(p.kind) }}
+                      @if (p.quoted_amount != null) {
+                        · {{ p.quoted_amount | currency: 'USD' : 'symbol' : '1.0-0' }}
+                      }
+                      @if (p.due_date) {
+                        · due {{ p.due_date | date: 'MMM d' }}
+                      }
+                    </div>
+                  </td>
+                  <td class="num">
+                    <select [ngModel]="p.status" (ngModelChange)="setProjectStatus(p, $event)" [disabled]="busy()" [attr.aria-label]="'Status of ' + p.title">
+                      @for (s of projectStatuses; track s.value) {
+                        <option [value]="s.value">{{ s.label }}</option>
+                      }
+                    </select>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </section>
+
+      <section class="card">
+        <h2>Billing</h2>
+        @for (s of subscriptions(); track s.id) {
+          <p>
+            <span class="badge" [class.green]="s.status === 'active'" [class.red]="s.status === 'past_due'">{{ s.status }}</span>
+            {{ s.plan_name || 'Support plan' }} ·
+            {{ s.amount | currency: 'USD' : 'symbol' : '1.0-0' }}/{{ s.billing_interval || 'month' }}
+            @if (s.current_period_end) {
+              <span class="muted">· {{ s.cancel_at_period_end ? 'ends' : 'renews' }} {{ s.current_period_end | date: 'MMM d' }}</span>
+            }
+          </p>
+        }
+        @if (invoices().length === 0 && subscriptions().length === 0) {
+          <p class="empty">No invoices or subscriptions linked yet.</p>
+        }
+        @if (invoices().length) {
+          <table class="a-table">
+            <tbody>
+              @for (inv of invoices(); track inv.id) {
+                <tr>
+                  <td>
+                    @if (inv.public_url) {
+                      <a [href]="inv.public_url" target="_blank" rel="noopener">#{{ inv.invoice_number || inv.square_invoice_id }}</a>
+                    } @else {
+                      #{{ inv.invoice_number || inv.square_invoice_id }}
+                    }
+                    <div class="muted">{{ inv.title }}</div>
+                  </td>
+                  <td class="num">{{ inv.amount | currency: 'USD' }}</td>
+                  <td class="num">
+                    @if (isOverdue(inv)) {
+                      <span class="badge red">Overdue</span>
+                    } @else {
+                      <span class="badge" [class.green]="inv.status === 'paid'">{{ inv.status }}</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </section>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>Activity</h2>
+    <form (ngSubmit)="addNote()" class="form-grid note-form">
+      <div class="field">
+        <label for="n-kind">Type</label>
+        <select id="n-kind" name="kind" [(ngModel)]="note.kind">
+          <option value="note">Note</option>
+          <option value="call">Call</option>
+          <option value="email">Email</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="n-body">What happened</label>
+        <input id="n-body" name="body" [(ngModel)]="note.body" placeholder="e.g. Called about the booking page, sending a quote Friday" />
+      </div>
+      <button type="submit" class="a-btn primary" [disabled]="busy() || !note.body.trim()">Add</button>
+    </form>
+    @if (activity().length === 0) {
+      <p class="empty">Nothing logged yet.</p>
+    } @else {
+      <ul class="timeline" style="margin-top: 12px">
+        @for (a of activity(); track a.id) {
+          <li>
+            <div class="when">{{ a.created_at | date: 'MMM d, y, h:mm a' }} · {{ a.kind.replace('_', ' ') }}</div>
+            <div class="pre">{{ a.body }}</div>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+}
