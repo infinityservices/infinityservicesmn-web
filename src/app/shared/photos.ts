@@ -10,6 +10,6 @@ export const PHOTOS = {
   aboutWorkspace: { src: 'images/about-workspace.jpg', alt: 'Writing code on a laptop' },
   servicesApps: { src: 'images/services-apps.jpg', alt: 'A small business owner using an app at the counter' },
   servicesSupport: { src: 'images/services-support.jpg', alt: 'Talking through a project over coffee' },
-  infinitrack: { src: 'images/infinitrack-screenshot.png', alt: 'InfiniTrack inventory dashboard' },
-  infiniherd: { src: 'images/infiniherd-screenshot.png', alt: 'InfiniHerd herd records screen' },
+  infinitrack: { src: 'images/infinitrack-logo.webp', alt: 'InfiniTrack logo' },
+  infiniherd: { src: 'images/infiniherd-logo.webp', alt: 'InfiniHerd logo' },
 } as const;

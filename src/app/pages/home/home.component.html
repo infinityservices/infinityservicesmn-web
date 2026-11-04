@@ -71,7 +71,7 @@
     <div class="projects-grid">
       @for (project of projects; track project.name) {
         <article class="project-card">
-          <app-photo [src]="project.photo.src" [alt]="project.photo.alt" ratio="16 / 10" />
+          <app-photo [src]="project.photo.src" [alt]="project.photo.alt" ratio="16 / 10" fit="contain" />
           <div class="project-body">
             <div class="project-title">
               <h3>{{ project.name }}</h3>

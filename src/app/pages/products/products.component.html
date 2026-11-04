@@ -9,7 +9,7 @@
   <div class="container">
     @for (project of projects; track project.name; let odd = $odd) {
       <article class="project" [class.reverse]="odd">
-        <app-photo [src]="project.photo.src" [alt]="project.photo.alt" ratio="16 / 10" />
+        <app-photo [src]="project.photo.src" [alt]="project.photo.alt" ratio="16 / 10" fit="contain" />
         <div class="project-copy">
           <div class="project-title">
             <h2>{{ project.name }}</h2>

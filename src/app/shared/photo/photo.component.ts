@@ -9,7 +9,7 @@ import { Component, input, signal } from '@angular/core';
   selector: 'app-photo',
   standalone: true,
   template: `
-    <div class="photo" [class.loaded]="loaded()" [style.aspect-ratio]="ratio()">
+    <div class="photo" [class.loaded]="loaded()" [class.contain]="fit() === 'contain'" [style.aspect-ratio]="ratio()">
       @if (!failed()) {
         <img
           [src]="src()"
@@ -51,12 +51,26 @@ import { Component, input, signal } from '@angular/core';
     .loaded img {
       opacity: 1;
     }
+
+    /* Logos and artwork: show the whole image on a plain panel. */
+    .contain {
+      background: #f5f5f5; /* matches the InfiniHerd badge artwork */
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .contain img {
+      object-fit: contain;
+      padding: 8%;
+    }
   `,
 })
 export class PhotoComponent {
   readonly src = input.required<string>();
   readonly alt = input('');
   readonly ratio = input('4 / 3');
+  /** 'cover' crops to fill (photos); 'contain' shows the whole image (logos). */
+  readonly fit = input<'cover' | 'contain'>('cover');
 
   protected readonly loaded = signal(false);
   protected readonly failed = signal(false);
