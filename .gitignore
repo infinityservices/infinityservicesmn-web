@@ -47,3 +47,6 @@ Thumbs.db
 
 # Local git worktrees for isolated feature work
 .worktrees/
+
+# Supabase CLI scratch files
+supabase/.temp/
