@@ -44,7 +44,7 @@ describe('support hours helpers', () => {
     expect(usage.allowance).toBe(90);
     expect(usage.overage).toBe(15);
     expect(usage.remaining).toBe(0);
-    expect(usage.overageCharge).toBe(22.5); // 15 min at $90/hr
+    expect(usage.overageCharge).toBe(25); // 15 min at $100/hr
   });
 
   it('reports remaining time under the allowance', () => {
