@@ -194,9 +194,12 @@ export const PLAN_ALLOWANCE_MINUTES: Record<SupportTier, number> = {
   priority: 180,
 };
 
-/** Fee schedule draft: $100/hr, or $90/hr for support plan members. */
+/**
+ * Hourly rate used to estimate support time beyond a plan's allowance (and
+ * hourly work for clients without a plan). Matches the pricing page; change
+ * it here and every estimate in the admin follows.
+ */
 export const HOURLY_RATE = 100;
-export const PLAN_MEMBER_HOURLY_RATE = 90;
 
 /** First and last day (YYYY-MM-DD) of the calendar month containing `date`, in local time. */
 export function monthRange(date: Date): { start: string; end: string } {
@@ -214,7 +217,7 @@ export interface PlanUsage {
   overage: number;
   /** Share of the allowance used, 0–1+ (capped at 1 for bars via Math.min). */
   ratio: number;
-  /** Estimated charge for time over the allowance, at the plan member rate. */
+  /** Estimated charge for time over the allowance, at HOURLY_RATE. */
   overageCharge: number;
 }
 
@@ -223,14 +226,13 @@ export function planUsage(entries: Pick<TimeEntry, 'minutes' | 'category'>[], ti
   const used = entries.filter((e) => e.category === 'support').reduce((sum, e) => sum + e.minutes, 0);
   const allowance = PLAN_ALLOWANCE_MINUTES[tier];
   const overage = Math.max(0, used - allowance);
-  const rate = tier === 'none' ? HOURLY_RATE : PLAN_MEMBER_HOURLY_RATE;
   return {
     used,
     allowance,
     remaining: Math.max(0, allowance - used),
     overage,
     ratio: allowance > 0 ? used / allowance : used > 0 ? 1 : 0,
-    overageCharge: Math.round((overage / 60) * rate * 100) / 100,
+    overageCharge: Math.round((overage / 60) * HOURLY_RATE * 100) / 100,
   };
 }
 
