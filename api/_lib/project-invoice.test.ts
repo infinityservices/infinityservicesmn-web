@@ -3,9 +3,11 @@ import {
   HttpError,
   SquareApi,
   assertAdmin,
+  cancelInvoice,
   createProjectInvoice,
   parseCreateInput,
   paymentRequests,
+  refreshInvoices,
   sendInvoice,
 } from './project-invoice';
 import type { SupabaseRest } from './supabase-rest';
@@ -186,12 +188,12 @@ describe('createProjectInvoice', () => {
     await expect(createProjectInvoice(input(), { square: api, db, today: TODAY })).rejects.toThrow('Add an email');
   });
 
-  it('passes Square errors through as 502s', async () => {
+  it('passes Square errors through with their message', async () => {
     const db = fakeDb([[project({ square_customer_id: 'CUST9' })], []]);
     const { api } = fakeSquare({ 'GET /locations': { locations: [{ id: 'LOC1' }] } });
     const err = await createProjectInvoice(input(), { square: api, db, today: TODAY }).catch((e) => e);
     expect(err).toBeInstanceOf(HttpError);
-    expect(err.status).toBe(502);
+    expect(err.status).toBe(404); // Square's not-found; other errors become 502
     expect(err.message).toContain('Square said');
   });
 });
@@ -223,5 +225,78 @@ describe('sendInvoice', () => {
     const { api, calls } = fakeSquare({});
     await expect(sendInvoice('inv:zzz', { square: api, db: fakeDb([[]]) })).rejects.toMatchObject({ status: 404 });
     expect(calls).toHaveLength(0);
+  });
+});
+
+describe('cancelInvoice', () => {
+  const known = [{ client_id: CLIENT_ID, project_id: PROJECT_ID, title: 'Booking page' }];
+
+  it('cancels a sent invoice at its current version', async () => {
+    const db = fakeDb([known]);
+    const { api, calls } = fakeSquare({
+      'GET /invoices/inv%3A1': { invoice: { ...draftInvoice, status: 'UNPAID', version: 4 } },
+      'POST /invoices/inv%3A1/cancel': { invoice: { ...draftInvoice, status: 'CANCELED' } },
+    });
+    expect(await cancelInvoice('inv:1', { square: api, db })).toEqual({ status: 'canceled' });
+    expect(calls[1].body).toEqual({ version: 4 });
+    expect(db.update).toHaveBeenCalledWith('invoices', 'square_invoice_id=eq.inv%3A1', { status: 'canceled' });
+    expect(db.insert).toHaveBeenCalledWith('activity', expect.objectContaining({ kind: 'note' }));
+  });
+
+  it('deletes a draft instead, since it was never sent', async () => {
+    const db = fakeDb([known]);
+    const { api, calls } = fakeSquare({
+      'GET /invoices/inv%3A1': { invoice: { ...draftInvoice, version: 0 } },
+      'DELETE /invoices/inv%3A1?version=0': {},
+    });
+    await cancelInvoice('inv:1', { square: api, db });
+    expect(calls.map((c) => c.method)).toEqual(['GET', 'DELETE']);
+    expect(db.update).toHaveBeenCalledWith('invoices', expect.any(String), { status: 'canceled' });
+  });
+
+  it('just records an invoice already canceled in Square', async () => {
+    const db = fakeDb([known]);
+    const { api, calls } = fakeSquare({ 'GET /invoices/inv%3A1': { invoice: { ...draftInvoice, status: 'CANCELED' } } });
+    await cancelInvoice('inv:1', { square: api, db });
+    expect(calls).toHaveLength(1);
+    expect(db.update).toHaveBeenCalled();
+    expect(db.insert).not.toHaveBeenCalled();
+  });
+
+  it('refuses to cancel a paid invoice', async () => {
+    const db = fakeDb([known]);
+    const { api } = fakeSquare({ 'GET /invoices/inv%3A1': { invoice: { ...draftInvoice, status: 'PAID' } } });
+    await expect(cancelInvoice('inv:1', { square: api, db })).rejects.toMatchObject({ status: 409 });
+    expect(db.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('refreshInvoices', () => {
+  it('re-reads every open invoice and counts status changes', async () => {
+    const db = fakeDb([
+      [
+        { square_invoice_id: 'inv:1', status: 'unpaid' },
+        { square_invoice_id: 'inv:2', status: 'unpaid' },
+      ],
+    ]);
+    const { api } = fakeSquare({
+      'GET /invoices/inv%3A1': { invoice: { ...draftInvoice, id: 'inv:1', status: 'CANCELED' } },
+      'GET /invoices/inv%3A2': { invoice: { ...draftInvoice, id: 'inv:2', status: 'UNPAID' } },
+    });
+    expect(await refreshInvoices(undefined, { square: api, db })).toEqual({ checked: 2, changed: 1 });
+    expect(db.select.mock.calls[0]).toEqual([expect.stringContaining('status=in.(draft,unpaid')]);
+    expect(db.upsert).toHaveBeenCalledWith('invoices', expect.objectContaining({ square_invoice_id: 'inv:1', status: 'canceled' }), 'square_invoice_id');
+  });
+
+  it('marks a draft deleted in Square as canceled', async () => {
+    const db = fakeDb([[{ square_invoice_id: 'inv:1', status: 'draft' }]]);
+    const { api } = fakeSquare({});
+    expect(await refreshInvoices(['inv:1'], { square: api, db })).toEqual({ checked: 1, changed: 1 });
+    expect(db.update).toHaveBeenCalledWith('invoices', 'square_invoice_id=eq.inv%3A1', { status: 'canceled' });
+  });
+
+  it('rejects malformed invoice IDs', async () => {
+    const { api } = fakeSquare({});
+    await expect(refreshInvoices(['inv:1', 'bad)id'], { square: api, db: fakeDb([]) })).rejects.toMatchObject({ status: 400 });
   });
 });

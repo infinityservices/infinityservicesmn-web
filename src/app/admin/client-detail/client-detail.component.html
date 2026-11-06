@@ -205,7 +205,12 @@
       </section>
 
       <section class="card">
-        <h2>Billing</h2>
+        <div class="page-head" style="margin-bottom: 8px">
+          <h2 style="margin: 0">Billing</h2>
+          @if (invoices().length) {
+            <button type="button" class="a-btn small" (click)="refreshFromSquare()" [disabled]="busy()">Refresh from Square</button>
+          }
+        </div>
         @for (s of subscriptions(); track s.id) {
           <p>
             <span class="badge" [class.green]="s.status === 'active'" [class.red]="s.status === 'past_due'">{{ s.status }}</span>
@@ -240,6 +245,13 @@
                       <button type="button" class="a-btn small primary" (click)="sendInvoice(inv)" [disabled]="busy()">Send</button>
                     } @else {
                       <span class="badge" [class.green]="inv.status === 'paid'">{{ inv.status }}</span>
+                    }
+                    @if (isCancelable(inv)) {
+                      <div class="invoice-state">
+                        <button type="button" class="link-btn" (click)="cancelInvoice(inv)" [disabled]="busy()">
+                          {{ inv.status === 'draft' ? 'Delete draft' : 'Cancel' }}
+                        </button>
+                      </div>
                     }
                   </td>
                 </tr>

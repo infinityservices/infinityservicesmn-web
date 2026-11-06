@@ -19,6 +19,7 @@ import {
   SUPPORT_TIERS,
   Subscription,
   invoiceDraftFor,
+  isCancelable,
   isOverdue,
   labelFor,
   openInvoiceFor,
@@ -54,6 +55,7 @@ export class ClientDetailComponent implements OnInit {
   readonly projectKinds = PROJECT_KINDS;
   readonly projectStatuses = PROJECT_STATUSES;
   readonly isOverdue = isOverdue;
+  readonly isCancelable = isCancelable;
 
   form: Partial<Client> = {};
   projectDraft = this.emptyProject();
@@ -187,6 +189,28 @@ export class ClientDetailComponent implements OnInit {
     }
     await this.run(async () => {
       await this.data.sendInvoice(invoice.square_invoice_id);
+      await this.refreshBilling();
+    });
+  }
+
+  async cancelInvoice(invoice: Invoice) {
+    const sent = invoice.status !== 'draft';
+    const label = `“${invoice.title ?? 'this invoice'}”`;
+    const question = sent
+      ? `Cancel ${label}? Square tells the client it was canceled, and it can't be undone.`
+      : `Delete the draft ${label}? It was never sent.`;
+    if (!confirm(question)) return;
+    await this.run(async () => {
+      await this.data.cancelInvoice(invoice.square_invoice_id);
+      await this.refreshBilling();
+    });
+  }
+
+  async refreshFromSquare() {
+    const ids = this.invoices().map((i) => i.square_invoice_id).slice(0, 50);
+    if (!ids.length) return;
+    await this.run(async () => {
+      await this.data.refreshInvoices(ids);
       await this.refreshBilling();
     });
   }

@@ -21,6 +21,8 @@ export class BillingComponent implements OnInit {
   readonly clients = signal<Client[]>([]);
   readonly loading = signal(true);
   readonly error = signal('');
+  readonly refreshing = signal(false);
+  readonly refreshNote = signal('');
   readonly filter = signal<InvoiceFilter>('open');
   readonly isOverdue = isOverdue;
 
@@ -72,6 +74,24 @@ export class BillingComponent implements OnInit {
       this.error.set(err instanceof Error ? err.message : 'Could not load billing.');
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  /** Re-reads every open invoice from Square, for changes the webhook missed. */
+  async refreshFromSquare() {
+    this.error.set('');
+    this.refreshNote.set('');
+    this.refreshing.set(true);
+    try {
+      const { checked, changed } = await this.data.refreshInvoices();
+      this.invoices.set(await this.data.invoices());
+      this.refreshNote.set(
+        checked === 0 ? 'No open invoices to check.' : `Checked ${checked}; ${changed} changed.`,
+      );
+    } catch (err) {
+      this.error.set(err instanceof Error ? err.message : 'Could not refresh from Square.');
+    } finally {
+      this.refreshing.set(false);
     }
   }
 

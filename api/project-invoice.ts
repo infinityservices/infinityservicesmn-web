@@ -4,8 +4,10 @@ import {
   HttpError,
   SquareApi,
   assertAdmin,
+  cancelInvoice,
   createProjectInvoice,
   getSquareConfig,
+  refreshInvoices,
   sendInvoice,
 } from './_lib/project-invoice';
 import { getSupabaseConfig } from './_lib/save-lead';
@@ -16,6 +18,8 @@ import { SupabaseRest } from './_lib/supabase-rest';
  * - { action: 'create', projectId, amount, split, depositDue, balanceDue, description }
  *   creates a draft invoice for a project.
  * - { action: 'send', invoiceId } publishes a draft, so Square emails it.
+ * - { action: 'cancel', invoiceId } cancels a sent invoice or deletes a draft.
+ * - { action: 'refresh', invoiceIds? } re-reads invoices from Square (all open ones if omitted).
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -42,6 +46,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const deps = { square: new SquareApi(squareConfig), db: new SupabaseRest(supabase) };
     if (body['action'] === 'send') {
       res.status(200).json(await sendInvoice(body['invoiceId'], deps));
+    } else if (body['action'] === 'cancel') {
+      res.status(200).json(await cancelInvoice(body['invoiceId'], deps));
+    } else if (body['action'] === 'refresh') {
+      res.status(200).json(await refreshInvoices(body['invoiceIds'], deps));
     } else if (body['action'] === 'create') {
       const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
       res.status(200).json(

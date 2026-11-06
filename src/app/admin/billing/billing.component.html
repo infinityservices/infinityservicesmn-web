@@ -4,6 +4,9 @@
     <div class="muted">Mirrored from Square and Stripe. Make changes there; they show up here automatically.</div>
   </div>
   <div class="actions" style="margin: 0">
+    <button type="button" class="a-btn" (click)="refreshFromSquare()" [disabled]="refreshing()">
+      {{ refreshing() ? 'Checking Square…' : 'Refresh from Square' }}
+    </button>
     <a class="a-btn" href="https://app.squareup.com/dashboard/invoices" target="_blank" rel="noopener">Square invoices</a>
     <a class="a-btn" href="https://dashboard.stripe.com/subscriptions" target="_blank" rel="noopener">Stripe subscriptions</a>
   </div>
@@ -11,6 +14,9 @@
 
 @if (error()) {
   <div class="error-box">{{ error() }}</div>
+}
+@if (refreshNote()) {
+  <p class="muted" role="status">{{ refreshNote() }}</p>
 }
 
 <section class="card">
@@ -25,7 +31,7 @@
   @if (loading()) {
     <p class="empty">Loading…</p>
   } @else if (visible().length === 0) {
-    <p class="empty">No invoices here. New Square invoices appear once the webhook is connected.</p>
+    <p class="empty">No invoices here. New Square invoices appear once the webhook is connected. Use "Refresh from Square" to pick up changes made in Square.</p>
   } @else {
     <div class="table-wrap">
       <table class="a-table">
