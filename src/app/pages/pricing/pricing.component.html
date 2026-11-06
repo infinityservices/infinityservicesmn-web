@@ -1,0 +1,37 @@
+<section class="page-header">
+  <div class="container">
+    <h1>Pricing</h1>
+    <p>
+      Every job is a little different, so these are ballparks. You'll always get a fixed quote
+      before I start.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <dl class="price-list">
+      @for (row of rows; track row.name) {
+        <div class="price-row">
+          <dt>
+            <span class="price-name">{{ row.name }}</span>
+            <span class="price-examples">{{ row.examples }}</span>
+          </dt>
+          <dd>{{ row.price }}</dd>
+        </div>
+      }
+    </dl>
+
+    <p class="fine-print">
+      Work that doesn't fit these is $100/hour. Registered nonprofits get 20% off.
+    </p>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container">
+    <h2>Have something in mind?</h2>
+    <p>Tell me what you need and I'll send you a fixed quote.</p>
+    <a routerLink="/contact" class="btn btn-primary">Get a quote</a>
+  </div>
+</section>
