@@ -305,3 +305,8 @@ export function invoiceDraftFor(project: Pick<Project, 'quoted_amount' | 'due_da
 export function openInvoiceFor(projectId: string, invoices: Invoice[]): Invoice | undefined {
   return invoices.find((i) => i.project_id === projectId && !['canceled', 'failed'].includes(i.status));
 }
+
+/** Invoices the admin can still cancel (drafts are deleted, sent ones canceled). */
+export function isCancelable(invoice: Pick<Invoice, 'status'>): boolean {
+  return ['draft', 'unpaid', 'scheduled', 'partially_paid'].includes(invoice.status);
+}

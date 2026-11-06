@@ -75,7 +75,7 @@ export class SquareApi {
       : 'https://connect.squareup.com/v2';
   }
 
-  async request<T>(method: 'GET' | 'POST', path: string, body?: unknown): Promise<T> {
+  async request<T>(method: 'GET' | 'POST' | 'DELETE', path: string, body?: unknown): Promise<T> {
     const res = await this.fetchImpl(`${this.base}${path}`, {
       method,
       headers: {
@@ -90,7 +90,7 @@ export class SquareApi {
     };
     if (!res.ok) {
       const detail = json.errors?.[0]?.detail ?? json.errors?.[0]?.code ?? `HTTP ${res.status}`;
-      throw new HttpError(502, `Square said: ${detail}`);
+      throw new HttpError(res.status === 404 ? 404 : 502, `Square said: ${detail}`);
     }
     return json as T;
   }
@@ -287,12 +287,102 @@ export async function createProjectInvoice(
   return { invoiceId: invoice.id, status: row.status };
 }
 
+const INVOICE_ID = /^[A-Za-z0-9:_-]{1,192}$/;
+
+/** Square statuses that can still change, so are worth re-checking. */
+export const OPEN_STATUSES = ['draft', 'unpaid', 'scheduled', 'partially_paid', 'payment_pending'];
+
+function invoicePath(id: string) {
+  return `/invoices/${encodeURIComponent(id)}`;
+}
+
+/**
+ * Re-reads invoices from Square and updates their rows, for when a change made
+ * in Square hasn't arrived by webhook. With no IDs, re-checks every invoice
+ * that is still open. Returns how many rows changed status.
+ */
+export async function refreshInvoices(
+  squareInvoiceIds: unknown,
+  deps: { square: SquareApi; db: SupabaseRest },
+) {
+  const { square, db } = deps;
+  let rows: Array<{ square_invoice_id: string; status: string }>;
+  if (Array.isArray(squareInvoiceIds) && squareInvoiceIds.length) {
+    const ids = squareInvoiceIds.filter((id): id is string => typeof id === 'string' && INVOICE_ID.test(id));
+    if (ids.length !== squareInvoiceIds.length || ids.length > 50) throw new HttpError(400, 'Bad invoice list.');
+    rows = await db.select(
+      `invoices?select=square_invoice_id,status&square_invoice_id=in.(${ids.map((id) => `"${id}"`).join(',')})`,
+    );
+  } else {
+    rows = await db.select(
+      `invoices?select=square_invoice_id,status&status=in.(${OPEN_STATUSES.join(',')})&limit=50`,
+    );
+  }
+
+  let changed = 0;
+  for (const row of rows) {
+    try {
+      const { invoice } = await square.request<{ invoice: SquareInvoice }>('GET', invoicePath(row.square_invoice_id));
+      const fresh = invoiceRow(invoice);
+      if (fresh.status !== row.status) changed++;
+      await db.upsert('invoices', fresh, 'square_invoice_id');
+    } catch (err) {
+      // Deleted drafts no longer exist in Square.
+      if (err instanceof HttpError && err.status === 404 && row.status === 'draft') {
+        await db.update('invoices', `square_invoice_id=${eq(row.square_invoice_id)}`, { status: 'canceled' });
+        changed++;
+        continue;
+      }
+      throw err;
+    }
+  }
+  return { checked: rows.length, changed };
+}
+
+/**
+ * Cancels an invoice in Square. Sent invoices are canceled (Square tells the
+ * client); drafts were never sent, so they are deleted instead.
+ */
+export async function cancelInvoice(squareInvoiceId: unknown, deps: { square: SquareApi; db: SupabaseRest }) {
+  if (typeof squareInvoiceId !== 'string' || !INVOICE_ID.test(squareInvoiceId)) {
+    throw new HttpError(400, 'Missing invoice.');
+  }
+  const { square, db } = deps;
+  const [known] = await db.select<{ client_id: string | null; project_id: string | null; title: string | null }>(
+    `invoices?select=client_id,project_id,title&square_invoice_id=${eq(squareInvoiceId)}`,
+  );
+  if (!known) throw new HttpError(404, 'That invoice is not in the admin.');
+
+  const path = invoicePath(squareInvoiceId);
+  const { invoice: current } = await square.request<{ invoice: SquareInvoice & { version?: number } }>('GET', path);
+  const status = (current.status ?? '').toUpperCase();
+
+  let note: string;
+  if (status === 'CANCELED') {
+    note = '';
+  } else if (status === 'DRAFT') {
+    await square.request('DELETE', `${path}?version=${current.version ?? 0}`);
+    note = `Deleted draft invoice “${known.title ?? ''}”.`;
+  } else if (['UNPAID', 'SCHEDULED', 'PARTIALLY_PAID'].includes(status)) {
+    await square.request('POST', `${path}/cancel`, { version: current.version });
+    note = `Canceled invoice${current.invoice_number ? ` #${current.invoice_number}` : ''} “${known.title ?? ''}”.`;
+  } else {
+    throw new HttpError(409, `A ${status.toLowerCase().replace('_', ' ')} invoice can't be canceled. Refund it in Square instead.`);
+  }
+
+  await db.update('invoices', `square_invoice_id=${eq(squareInvoiceId)}`, { status: 'canceled' });
+  if (note && known.client_id) {
+    await db.insert('activity', { client_id: known.client_id, project_id: known.project_id, kind: 'note', body: note });
+  }
+  return { status: 'canceled' };
+}
+
 /** Publishes a draft invoice, which makes Square email it to the client. */
 export async function sendInvoice(
   squareInvoiceId: unknown,
   deps: { square: SquareApi; db: SupabaseRest },
 ) {
-  if (typeof squareInvoiceId !== 'string' || !/^[A-Za-z0-9:_-]{1,192}$/.test(squareInvoiceId)) {
+  if (typeof squareInvoiceId !== 'string' || !INVOICE_ID.test(squareInvoiceId)) {
     throw new HttpError(400, 'Missing invoice.');
   }
   const { square, db } = deps;
@@ -303,7 +393,7 @@ export async function sendInvoice(
   }>(`invoices?select=client_id,project_id,title&square_invoice_id=${eq(squareInvoiceId)}`);
   if (!known) throw new HttpError(404, 'That invoice is not in the admin.');
 
-  const path = `/invoices/${encodeURIComponent(squareInvoiceId)}`;
+  const path = invoicePath(squareInvoiceId);
   const { invoice: current } = await square.request<{
     invoice: SquareInvoice & { version?: number };
   }>('GET', path);

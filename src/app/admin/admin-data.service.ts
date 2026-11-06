@@ -126,6 +126,19 @@ export class AdminDataService {
     await this.callApi('/api/project-invoice', { action: 'send', invoiceId: squareInvoiceId });
   }
 
+  /** Cancels a sent invoice in Square, or deletes a draft. */
+  async cancelInvoice(squareInvoiceId: string): Promise<void> {
+    await this.callApi('/api/project-invoice', { action: 'cancel', invoiceId: squareInvoiceId });
+  }
+
+  /** Re-reads invoices from Square (every open one when no IDs are given). */
+  async refreshInvoices(squareInvoiceIds?: string[]): Promise<{ checked: number; changed: number }> {
+    return (await this.callApi('/api/project-invoice', { action: 'refresh', invoiceIds: squareInvoiceIds })) as {
+      checked: number;
+      changed: number;
+    };
+  }
+
   private async callApi(path: string, body: unknown): Promise<unknown> {
     const { data } = await this.db.auth.getSession();
     const response = await fetch(path, {
