@@ -14,12 +14,16 @@ import { FooterComponent } from './shared/footer/footer.component';
 export class AppComponent {
   private readonly router = inject(Router);
 
-  /** The admin area has its own layout, without the public navbar and footer. */
-  readonly inAdmin = toSignal(
+  /** The admin area and client portal have their own layouts, without the public navbar and footer. */
+  readonly ownLayout = toSignal(
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
-      map((e) => e.urlAfterRedirects.startsWith('/admin')),
+      map((e) => hasOwnLayout(e.urlAfterRedirects)),
     ),
-    { initialValue: typeof location !== 'undefined' && location.pathname.startsWith('/admin') },
+    { initialValue: typeof location !== 'undefined' && hasOwnLayout(location.pathname) },
   );
+}
+
+export function hasOwnLayout(url: string): boolean {
+  return /^\/(admin|portal)(\/|\?|#|$)/.test(url);
 }

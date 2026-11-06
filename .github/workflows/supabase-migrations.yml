@@ -1,0 +1,87 @@
+# Database migrations for the Infinity Services Business Supabase project.
+#
+# - Pull requests: run every migration plus supabase/tests/*.sql on a throwaway
+#   Postgres, so a broken migration is caught before it merges.
+# - Push to main: apply any migrations the live database doesn't have yet
+#   (`supabase db push` skips ones already in its migration history).
+#
+# Needs one repository secret, SUPABASE_DB_URL: the Session pooler connection
+# string from Supabase (Connect button > Session pooler), with the database
+# password filled in.
+name: Supabase migrations
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/supabase-migrations.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+  workflow_dispatch:
+
+concurrency:
+  group: supabase-migrations-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Test migrations
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply migrations to a scratch database
+        run: |
+          psql -v ON_ERROR_STOP=1 -q -f supabase/tests/stub.sql
+          for f in supabase/migrations/*.sql; do
+            echo "Applying $f"
+            psql -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+      - name: Run database tests
+        run: |
+          for f in supabase/tests/*.sql; do
+            [ "$(basename "$f")" = stub.sql ] && continue
+            echo "Running $f"
+            psql -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+
+  deploy:
+    name: Apply to live database
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.1
+      - name: Check the secret is set
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::Add the SUPABASE_DB_URL repository secret (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+      - name: Show pending migrations
+        run: supabase db push --db-url "$SUPABASE_DB_URL" --dry-run
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      - name: Apply migrations
+        run: supabase db push --db-url "$SUPABASE_DB_URL" --yes
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

@@ -37,5 +37,10 @@ export const routes: Routes = [
     path: 'admin',
     loadChildren: () => import('./admin/admin.routes').then((m) => m.ADMIN_ROUTES),
   },
+  {
+    // Client portal: magic-link sign-in, each client sees only their own account.
+    path: 'portal',
+    loadChildren: () => import('./portal/portal.routes').then((m) => m.PORTAL_ROUTES),
+  },
   { path: '**', redirectTo: '' },
 ];

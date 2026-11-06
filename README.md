@@ -60,6 +60,33 @@ A private admin area for leads, clients, projects and billing, lazy-loaded so pu
 
 **Invoicing a project.** On a client page, a project's **Invoice** button creates a *draft* Square invoice (`/api/project-invoice`): the quoted amount, split into a 50% deposit and 50% on completion for jobs of $500 or more. It finds or creates the client's Square customer by email and saves the ID on the client. Nothing reaches the client until **Send** is pressed under Billing, which publishes the invoice so Square emails it. Needs `SQUARE_ACCESS_TOKEN` (Square Developer dashboard → your app → Production → Access token) and optionally `SQUARE_LOCATION_ID` (defaults to the first active location) and `SQUARE_ENVIRONMENT=sandbox` for testing.
 
+## Database migrations
+
+Schema changes live in `supabase/migrations/` and are applied by GitHub Actions (`.github/workflows/supabase-migrations.yml`):
+
+- **Pull requests** run every migration plus the checks in `supabase/tests/` on a throwaway Postgres.
+- **Merging to `main`** runs `supabase db push`, which applies only the migrations the live database hasn't had yet.
+
+File names must keep the `<version>_<name>.sql` format, and new ones need a version later than the newest one already there (e.g. `20261105090000_add_x.sql`). Don't apply migrations by hand in the SQL editor any more, or the history gets out of step.
+
+**One-time setup:** add a repository secret named `SUPABASE_DB_URL` (GitHub → Settings → Secrets and variables → Actions). Its value is the **Session pooler** connection string from Supabase (Connect button at the top of the project → Session pooler), with your database password in place of `[YOUR-PASSWORD]`. If you don't know the password, reset it under Project Settings → Database. The session pooler is needed because GitHub's runners can't reach Supabase's direct (IPv6) address.
+
+## Client portal (`/portal`)
+
+Clients sign in with a magic link (no password) and see their own projects, invoices (drafts hidden) and support plan, with Square "Pay now" links. They never see notes, hosting notes, the activity log or other clients. Lazy-loaded like `/admin`.
+
+**How access works.** `public.portal_members` lists which emails can see which client. Clients can't read any table directly; the page calls `portal_overview()`, a database function that returns only client-safe columns for the clients the signed-in email belongs to. Checks live in `supabase/tests/portal_access.sql`.
+
+**Giving a client access.** On the client's admin page, use **Client portal → Give portal access**. `/api/portal-invite` (admin only) records the email and sends Supabase's invite email, or a sign-in link if that email already has a login. Remove someone and they lose access immediately.
+
+**One-time setup in Supabase** (Authentication settings):
+
+1. **Emails → SMTP settings:** turn on custom SMTP (e.g. Resend: host `smtp.resend.com`, port 465, user `resend`, password = a Resend API key, sender on the verified domain). Supabase's built-in mailer only delivers to the project's team members and a few emails an hour, so clients won't get links without this.
+2. **URL configuration → Redirect URLs:** add `https://infinityservicesmn.com/portal`, `https://www.infinityservicesmn.com/portal`, your Vercel preview domain with `/portal` (e.g. `https://*.vercel.app/portal`, to test previews) and `http://localhost:4200/portal`.
+3. **Email templates:** optionally reword "Invite user" and "Magic link" to mention Infinity Services.
+
+Sign-ups stay off: the portal never creates logins, only `/api/portal-invite` does.
+
 ## Deployment
 
 `vercel.json` builds this app (`framework: angular`,
