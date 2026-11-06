@@ -188,6 +188,10 @@ table.a-table {
 .time-form { grid-template-columns: 150px 120px 1fr 1fr; align-items: end; }
 .note-form { grid-template-columns: 160px 1fr auto; align-items: end; }
 .note-form.portal-form { grid-template-columns: 1fr auto; }
+.a-btn.small { padding: 3px 10px; font-size: 13px; }
+.invoice-state { margin-top: 6px; font-size: 13px; }
+.invoice-row td { background: var(--color-slate-50, #f6f8fa); padding: 12px; }
+.field.check { justify-content: end; label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: inherit; } input { width: auto; } }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 .empty { color: var(--color-text-secondary); padding: 16px 0; }
 .ok-box { background: #dcf3e6; color: #1d6b3f; padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 12px; }
@@ -208,13 +212,7 @@ table.a-table {
   .admin-user { flex-basis: 100%; justify-content: space-between; }
   .admin-main { padding: 20px 16px 48px; }
   .stats { grid-template-columns: repeat(2, 1fr); }
-  .grid-2, .form-grid, .form-grid.month-nav { display: flex; align-items: center; gap: 8px; .a-btn { padding: 4px 10px; } }
-.usage { margin-bottom: 16px; }
-.usage-line { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
-.usage-bar { height: 10px; border-radius: 9999px; background: var(--color-slate-200); overflow: hidden; }
-.usage-fill { height: 100%; background: var(--color-primary); &.near { background: #d97706; } &.over { background: #dc2626; } }
-.time-form { grid-template-columns: 150px 120px 1fr 1fr; align-items: end; }
-.note-form { grid-template-columns: 1fr; }
+  .grid-2, .form-grid, .form-grid.note-form, .form-grid.time-form { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 600px) {

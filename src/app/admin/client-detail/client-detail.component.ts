@@ -9,6 +9,7 @@ import {
   ActivityKind,
   Client,
   Invoice,
+  InvoiceDraft,
   PROJECT_KINDS,
   PROJECT_STATUSES,
   PortalMember,
@@ -17,8 +18,10 @@ import {
   ProjectStatus,
   SUPPORT_TIERS,
   Subscription,
+  invoiceDraftFor,
   isOverdue,
   labelFor,
+  openInvoiceFor,
 } from '../models';
 
 @Component({
@@ -44,6 +47,8 @@ export class ClientDetailComponent implements OnInit {
   readonly showProjectForm = signal(false);
   readonly portalMembers = signal<PortalMember[]>([]);
   readonly portalMessage = signal('');
+  /** The project whose invoice form is open, if any. */
+  readonly invoicingProjectId = signal<string | null>(null);
 
   readonly tiers = SUPPORT_TIERS;
   readonly projectKinds = PROJECT_KINDS;
@@ -52,6 +57,7 @@ export class ClientDetailComponent implements OnInit {
 
   form: Partial<Client> = {};
   projectDraft = this.emptyProject();
+  invoiceDraft: InvoiceDraft = invoiceDraftFor({ quoted_amount: null, due_date: null });
   note = { kind: 'note' as ActivityKind, body: '' };
   portalEmail = '';
 
@@ -150,6 +156,52 @@ export class ClientDetailComponent implements OnInit {
       });
       await this.refreshProjectsAndActivity();
     });
+  }
+
+  projectInvoice(project: Project): Invoice | undefined {
+    return openInvoiceFor(project.id, this.invoices());
+  }
+
+  toggleInvoiceForm(project: Project) {
+    if (this.invoicingProjectId() === project.id) {
+      this.invoicingProjectId.set(null);
+      return;
+    }
+    this.invoiceDraft = invoiceDraftFor(project);
+    this.invoicingProjectId.set(project.id);
+  }
+
+  async createInvoice(project: Project) {
+    await this.run(async () => {
+      await this.data.createProjectInvoice(project.id, this.invoiceDraft);
+      this.invoicingProjectId.set(null);
+      await this.refreshBilling();
+    });
+  }
+
+  async sendInvoice(invoice: Invoice) {
+    const who = this.client()?.email ?? 'the client';
+    const amount = invoice.amount != null ? `$${invoice.amount.toLocaleString('en-US')} ` : '';
+    if (!confirm(`Send the ${amount}invoice “${invoice.title ?? ''}” to ${who}? Square emails it right away.`)) {
+      return;
+    }
+    await this.run(async () => {
+      await this.data.sendInvoice(invoice.square_invoice_id);
+      await this.refreshBilling();
+    });
+  }
+
+  private async refreshBilling() {
+    const [client, invoices, activity] = await Promise.all([
+      this.data.client(this.id),
+      this.data.invoices(this.id),
+      this.data.activity({ clientId: this.id }),
+    ]);
+    // Creating an invoice can link a new Square customer ID to the client.
+    this.client.update((c) => (c ? { ...c, square_customer_id: client.square_customer_id } : c));
+    this.form.square_customer_id = client.square_customer_id;
+    this.invoices.set(invoices);
+    this.activity.set(activity);
   }
 
   async addNote() {

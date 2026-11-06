@@ -262,3 +262,44 @@ export function parseDuration(input: string): number | null {
   minutes = Math.round(minutes);
   return minutes > 0 && minutes <= 1440 ? minutes : null;
 }
+
+// Project invoices ---------------------------------------------------------
+
+/** Jobs at or above this amount are billed 50% up front, 50% on completion. */
+export const SPLIT_THRESHOLD = 500;
+
+export interface InvoiceDraft {
+  amount: number | null;
+  split: boolean;
+  depositDue: string;
+  balanceDue: string;
+  description: string;
+}
+
+function isoDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/**
+ * Starting values for a project's invoice: the quoted amount, split 50/50 at
+ * $500 or more, deposit due today, and the rest due on the project's due date
+ * (or in two weeks when it has none, or it has passed).
+ */
+export function invoiceDraftFor(project: Pick<Project, 'quoted_amount' | 'due_date'>, today = new Date()): InvoiceDraft {
+  const todayIso = isoDate(today);
+  const inTwoWeeks = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 14);
+  const due = project.due_date && project.due_date >= todayIso ? project.due_date : isoDate(inTwoWeeks);
+  const amount = project.quoted_amount ?? null;
+  return {
+    amount,
+    split: (amount ?? 0) >= SPLIT_THRESHOLD,
+    depositDue: todayIso,
+    balanceDue: due,
+    description: '',
+  };
+}
+
+/** The project's invoice that still counts (not canceled or failed), if any. */
+export function openInvoiceFor(projectId: string, invoices: Invoice[]): Invoice | undefined {
+  return invoices.find((i) => i.project_id === projectId && !['canceled', 'failed'].includes(i.status));
+}

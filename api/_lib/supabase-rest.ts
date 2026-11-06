@@ -37,6 +37,11 @@ export class SupabaseRest {
     });
   }
 
+  /** Inserts one row. */
+  async insert(table: string, row: Record<string, unknown>): Promise<void> {
+    await this.request(table, { method: 'POST', body: JSON.stringify(row) });
+  }
+
   /** Updates rows matching a PostgREST filter, e.g. `id=eq.123`. */
   async update(table: string, filter: string, patch: Record<string, unknown>): Promise<void> {
     await this.request(`${table}?${filter}`, { method: 'PATCH', body: JSON.stringify(patch) });

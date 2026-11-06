@@ -149,8 +149,55 @@
                         <option [value]="s.value">{{ s.label }}</option>
                       }
                     </select>
+                    @if (projectInvoice(p); as inv) {
+                      <div class="muted invoice-state">Invoice {{ inv.status }}</div>
+                    } @else if (p.status !== 'cancelled') {
+                      <div class="invoice-state">
+                        <button type="button" class="a-btn small" (click)="toggleInvoiceForm(p)" [attr.aria-expanded]="invoicingProjectId() === p.id">
+                          {{ invoicingProjectId() === p.id ? 'Cancel' : 'Invoice' }}
+                        </button>
+                      </div>
+                    }
                   </td>
                 </tr>
+                @if (invoicingProjectId() === p.id) {
+                  <tr class="invoice-row">
+                    <td colspan="2">
+                      <form (ngSubmit)="createInvoice(p)">
+                        <div class="form-grid">
+                          <div class="field">
+                            <label for="i-amount">Amount ($)</label>
+                            <input id="i-amount" name="amount" type="number" min="1" step="0.01" required [(ngModel)]="invoiceDraft.amount" />
+                          </div>
+                          <div class="field check">
+                            <label>
+                              <input type="checkbox" name="split" [(ngModel)]="invoiceDraft.split" />
+                              50% deposit, 50% on completion
+                            </label>
+                          </div>
+                          @if (invoiceDraft.split) {
+                            <div class="field">
+                              <label for="i-deposit">Deposit due</label>
+                              <input id="i-deposit" name="depositDue" type="date" required [(ngModel)]="invoiceDraft.depositDue" />
+                            </div>
+                          }
+                          <div class="field">
+                            <label for="i-due">{{ invoiceDraft.split ? 'Final payment due' : 'Due' }}</label>
+                            <input id="i-due" name="balanceDue" type="date" required [(ngModel)]="invoiceDraft.balanceDue" />
+                          </div>
+                          <div class="field full">
+                            <label for="i-desc">Note on the invoice (optional)</label>
+                            <textarea id="i-desc" name="description" [(ngModel)]="invoiceDraft.description" placeholder="e.g. Booking page with Square Appointments, includes one round of changes"></textarea>
+                          </div>
+                        </div>
+                        <div class="actions">
+                          <button type="submit" class="a-btn primary" [disabled]="busy() || !invoiceDraft.amount">Create draft in Square</button>
+                          <span class="muted">Nothing is emailed until you press Send.</span>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                }
               }
             </tbody>
           </table>
@@ -189,6 +236,8 @@
                   <td class="num">
                     @if (isOverdue(inv)) {
                       <span class="badge red">Overdue</span>
+                    } @else if (inv.status === 'draft') {
+                      <button type="button" class="a-btn small primary" (click)="sendInvoice(inv)" [disabled]="busy()">Send</button>
                     } @else {
                       <span class="badge" [class.green]="inv.status === 'paid'">{{ inv.status }}</span>
                     }

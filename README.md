@@ -58,6 +58,8 @@ A private admin area for leads, clients, projects and billing, lazy-loaded so pu
 - Square invoices attach to the client with the same Square customer ID, or else the one client with the same email (which then records the ID). Unmatched invoices show under Billing → "Not linked to a client".
 - Stripe subscriptions are saved only for customers linked to a client, so InfiniTrack/InfiniHerd subscriptions on the same Stripe account are ignored. A new Stripe customer whose email matches a client is linked automatically; otherwise paste the `cus_…` ID on the client page.
 
+**Invoicing a project.** On a client page, a project's **Invoice** button creates a *draft* Square invoice (`/api/project-invoice`): the quoted amount, split into a 50% deposit and 50% on completion for jobs of $500 or more. It finds or creates the client's Square customer by email and saves the ID on the client. Nothing reaches the client until **Send** is pressed under Billing, which publishes the invoice so Square emails it. Needs `SQUARE_ACCESS_TOKEN` (Square Developer dashboard → your app → Production → Access token) and optionally `SQUARE_LOCATION_ID` (defaults to the first active location) and `SQUARE_ENVIRONMENT=sandbox` for testing.
+
 ## Database migrations
 
 Schema changes live in `supabase/migrations/` and are applied by GitHub Actions (`.github/workflows/supabase-migrations.yml`):
