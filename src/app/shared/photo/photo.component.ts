@@ -52,16 +52,17 @@ import { Component, input, signal } from '@angular/core';
       opacity: 1;
     }
 
-    /* Logos and artwork: show the whole image on a plain panel. */
+    /* Logos and artwork: show the whole image on a plain panel.
+       Product logos ship as 16:10 art on white with their own margin,
+       so the panel matches that white and adds no padding. */
     .contain {
-      background: #f5f5f5; /* matches the InfiniHerd badge artwork */
+      background: #fff;
       border: 1px solid var(--color-border);
       box-shadow: var(--shadow-sm);
     }
 
     .contain img {
       object-fit: contain;
-      padding: 8%;
     }
   `,
 })
